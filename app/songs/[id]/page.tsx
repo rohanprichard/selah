@@ -23,7 +23,12 @@ export default async function SongDetailPage({ params }: SongDetailPageProps) {
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-12">
-      <SongViewer song={detail.song} sections={detail.sections} isOwner={detail.isOwner} />
+      <SongViewer
+        song={detail.song}
+        sections={detail.sections}
+        isOwner={detail.isOwner}
+        ownerName={detail.ownerName}
+      />
     </div>
   );
 }

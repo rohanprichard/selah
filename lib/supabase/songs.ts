@@ -1,12 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { MUSICAL_KEYS, type MusicalKey } from "@/lib/constants/music";
+import { normalizeMusicalKey } from "@/lib/constants/music";
 import { createClient } from "@/lib/supabase/server";
 import type { Song, SongSection } from "@/lib/types";
 
 export type SongFilters = {
   query?: string;
-  key?: MusicalKey | "";
+  key?: string;
   tag?: string;
   page?: number;
   pageSize?: number;
@@ -43,8 +43,9 @@ export async function fetchPublicSongs(filters: SongFilters = {}): Promise<Songs
     );
   }
 
-  if (key && MUSICAL_KEYS.includes(key)) {
-    songsQuery = songsQuery.eq("key", key);
+  const normalizedKey = normalizeMusicalKey(key);
+  if (normalizedKey) {
+    songsQuery = songsQuery.eq("key", normalizedKey);
   }
 
   if (tag.trim()) {
@@ -96,6 +97,7 @@ export type SongDetailResult = {
   song: Song;
   sections: SongSection[];
   isOwner: boolean;
+  ownerName: string | null;
 };
 
 export async function fetchSongDetail(id: string): Promise<SongDetailResult> {
@@ -106,7 +108,7 @@ export async function fetchSongDetail(id: string): Promise<SongDetailResult> {
 
   const { data, error } = await supabase
     .from("songs")
-    .select("*, song_sections(*)")
+    .select("*, song_sections(*), profiles(full_name)")
     .eq("id", id)
     .order("order_index", { foreignTable: "song_sections", ascending: true })
     .maybeSingle();
@@ -115,8 +117,9 @@ export async function fetchSongDetail(id: string): Promise<SongDetailResult> {
     throw new Error(error?.message ?? "Song not found");
   }
 
-  const { song_sections: rawSections, ...rest } = data as Song & {
+  const { song_sections: rawSections, profiles, ...rest } = data as Song & {
     song_sections: SongSection[] | null;
+    profiles: { full_name: string | null } | null;
   };
 
   const sections = (rawSections ?? []).sort(
@@ -127,6 +130,7 @@ export async function fetchSongDetail(id: string): Promise<SongDetailResult> {
     song: rest,
     sections,
     isOwner: Boolean(user && user.id === rest.created_by),
+    ownerName: profiles?.full_name ?? null,
   };
 }
 
