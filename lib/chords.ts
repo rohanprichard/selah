@@ -1,4 +1,4 @@
-import { Chord, Interval } from "@tonaljs/tonal";
+import { Chord, Interval, Note } from "@tonaljs/tonal";
 
 export type ParsedChord = {
   chord: string;
@@ -78,61 +78,59 @@ function transposeChord(chord: string, semitones: number): string {
   const interval = Interval.fromSemitones(semitones);
   if (!interval) return chord;
 
-  const transposed = Chord.transpose(chord, interval);
-  if (transposed) {
-    return transposed;
-  }
+  const slashSplit = chord.split("/");
+  const basePart = slashSplit[0];
+  const bassPart = slashSplit[1];
 
-  // Attempt to transpose slash chords manually
-  if (chord.includes("/")) {
-    const [base, bass] = chord.split("/");
-    const transposedBase = Chord.transpose(base, interval) || transposeSimple(base, semitones);
-    const transposedBass = transposeSimple(bass, semitones);
-    if (transposedBase && transposedBass) {
-      return `${transposedBase}/${transposedBass}`;
+  const {
+    name,
+    tonic,
+  } = Chord.get(basePart);
+
+  if (name && tonic) {
+    const transposedRoot = Note.transpose(tonic, interval);
+    const suffix = basePart.slice(tonic.length);
+    const parts: string[] = [];
+
+    if (transposedRoot) {
+      const normalizedRoot = normalizePitch(transposedRoot);
+      parts.push(`${normalizedRoot}${suffix}`);
+      if (bassPart) {
+        const transposedBass = Note.transpose(bassPart, interval);
+        const normalizedBass = transposedBass ? normalizePitch(transposedBass) : bassPart;
+        parts.push(normalizedBass);
+        return parts.join("/");
+      }
+      return parts[0];
     }
   }
 
-  const fallback = transposeSimple(chord, semitones);
-  return fallback || chord;
+  if (bassPart) {
+    const transposedBase = Note.transpose(basePart, interval);
+    const normalizedBase = transposedBase ? normalizePitch(transposedBase) : basePart;
+    const transposedBass = Note.transpose(bassPart, interval);
+    const normalizedBass = transposedBass ? normalizePitch(transposedBass) : bassPart;
+    return `${normalizedBase}/${normalizedBass}`;
+  }
+
+  const transposedSingle = Note.transpose(basePart, interval);
+  return transposedSingle ? normalizePitch(transposedSingle) : chord;
 }
 
-const NOTE_ORDER = [
-  "C",
-  "C#",
-  "D",
-  "D#",
-  "E",
-  "F",
-  "F#",
-  "G",
-  "G#",
-  "A",
-  "A#",
-  "B",
-];
+const FLAT_TO_SHARP: Record<string, string> = {
+  Bb: "A#",
+  Db: "C#",
+  Eb: "D#",
+  Gb: "F#",
+  Ab: "G#",
+};
 
-function transposeSimple(chord: string | undefined, semitones: number): string | undefined {
-  if (!chord) return chord;
-  const match = chord.match(/^([A-G](?:#|b)?)(.*)$/);
-  if (!match) return chord;
-  const [, root, suffix] = match;
-  const currentIndex = NOTE_ORDER.indexOf(normalizeSharp(root));
-  if (currentIndex === -1) return chord;
-  const newIndex = (currentIndex + semitones + NOTE_ORDER.length) % NOTE_ORDER.length;
-  const newRoot = NOTE_ORDER[newIndex];
-  return `${newRoot}${suffix}`;
-}
-
-function normalizeSharp(note: string): string {
-  const flats: Record<string, string> = {
-    Bb: "A#",
-    Db: "C#",
-    Eb: "D#",
-    Gb: "F#",
-    Ab: "G#",
-  };
-  return flats[note] || note;
+function normalizePitch(note: string): string {
+  const match = note.match(/^([A-G](?:#|b)?)(.*)$/);
+  if (!match) return note;
+  const [, pitch, rest] = match;
+  const normalized = FLAT_TO_SHARP[pitch] ?? pitch;
+  return `${normalized}${rest}`;
 }
 
 export function buildChordDisplay(line: ParsedLine): string {

@@ -20,6 +20,24 @@ describe("transposeLines", () => {
     const transposed = transposeLines(lines, 2);
     expect(transposed[0].chords[0].chord).toBe("A");
   });
+
+  it("transposes slash chords", () => {
+    const lines = parseLyrics("[G/B]Line");
+    const up = transposeLines(lines, 1);
+    expect(up[0].chords[0].chord).toBe("G#/C");
+
+    const down = transposeLines(lines, -2);
+    expect(down[0].chords[0].chord).toBe("F/A");
+  });
+
+  it("transposes extended chords with bass", () => {
+    const lines = parseLyrics("[Gmaj7/B]Line");
+    const up = transposeLines(lines, 1);
+    expect(up[0].chords[0].chord).toBe("G#maj7/C");
+
+    const down = transposeLines(lines, -1);
+    expect(down[0].chords[0].chord).toBe("F#maj7/A#");
+  });
 });
 
 describe("buildChordDisplay", () => {

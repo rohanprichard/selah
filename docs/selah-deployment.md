@@ -1,4 +1,4 @@
-# Selah Deployment to Vercel
+# Selah Deployment to Vercel 
 
 Use this checklist to launch Selah on Vercel with Supabase.
 
@@ -32,15 +32,15 @@ In Supabase Dashboard → *Authentication → URL Configuration*:
    - `http://localhost:3000/auth/callback`
    - `http://localhost:3000/my-songs`
    - `http://localhost:3000/songs/new`
-   - `https://<your-vercel-domain>/auth/update-password`
-   - `https://<your-vercel-domain>/auth/sign-up`
-   - `https://<your-vercel-domain>/auth/callback`
-   - `https://<your-vercel-domain>/my-songs`
-   - `https://<your-vercel-domain>/songs/new`
+   - `https://ccm-saas.vercel.app/auth/update-password`
+   - `https://ccm-saas.vercel.app/auth/sign-up`
+   - `https://ccm-saas.vercel.app/auth/callback`
+   - `https://ccm-saas.vercel.app/my-songs`
+   - `https://ccm-saas.vercel.app/songs/new`
 
 ### Google OAuth
 
-1. In Google Cloud Console, add `https://<your-vercel-domain>/auth/callback` to the authorized redirect URIs.
+1. In Google Cloud Console, add `https://ccm-saas.vercel.app/auth/callback` to the authorized redirect URIs.
 2. Paste the Google client ID and secret into Supabase → *Authentication → Providers → Google*.
 
 ### Database
