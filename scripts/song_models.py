@@ -23,10 +23,12 @@ except ImportError:  # pragma: no cover - optional dependency
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-CONTENT_USER_ID = os.environ.get("CCM_CONTENT_USER_ID")
+CONTENT_USER_ID = os.environ.get("SELAH_CONTENT_USER_ID") or os.environ.get("CCM_CONTENT_USER_ID")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
-DEFAULT_CLAUDE_MODEL = os.environ.get(
-    "CCM_CLAUDE_MODEL", "claude-3-5-sonnet-latest"
+DEFAULT_MODEL = (
+    os.environ.get("SELAH_CLAUDE_MODEL")
+    or os.environ.get("CCM_CLAUDE_MODEL")
+    or "claude-3-5-sonnet-latest"
 )
 
 
@@ -119,11 +121,11 @@ def generate_song_input_from_url(
     if resolved_created_by is None:
         if not CONTENT_USER_ID:
             raise RuntimeError(
-                "created_by must be provided or CCM_CONTENT_USER_ID must be set."
+                "created_by must be provided or SELAH_CONTENT_USER_ID must be set."
             )
         resolved_created_by = UUID(CONTENT_USER_ID)
 
-    claude_model = model or DEFAULT_CLAUDE_MODEL
+    claude_model = model or DEFAULT_MODEL
 
     anthropic_client = Anthropic(api_key=api_key)
     guided_client = instructor.from_anthropic(anthropic_client)

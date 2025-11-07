@@ -166,9 +166,9 @@ export function SongEditor({ mode, song, sections = [] }: SongEditorProps) {
     <form className="space-y-8" onSubmit={handleSubmit}>
       <Card>
         <CardHeader>
-          <CardTitle>{mode === "create" ? "Create New Song" : "Edit Song"}</CardTitle>
+          <CardTitle>{mode === "create" ? "Create a song" : "Edit song"}</CardTitle>
           <CardDescription>
-            Fill out the song details and add sections with lyrics and chords using the [Chord] syntax.
+            Capture the essentials so your team can rehearse with clarity.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2">
@@ -240,7 +240,7 @@ export function SongEditor({ mode, song, sections = [] }: SongEditorProps) {
               onCheckedChange={(value) => updateField("isPublic", Boolean(value))}
             />
             <Label htmlFor="is-public" className="text-sm">
-              Make this song public so the community can discover it
+              Share this chart with the Selah community
             </Label>
           </div>
         </CardContent>
@@ -251,7 +251,7 @@ export function SongEditor({ mode, song, sections = [] }: SongEditorProps) {
           <div>
             <CardTitle>Sections</CardTitle>
             <CardDescription>
-              Add verses, choruses, and other sections. Wrap chords with square brackets like [G]Amazing grace.
+              Add verses, choruses, and more. Keep chords inline by wrapping them like [G]Amazing grace.
             </CardDescription>
           </div>
           <Button type="button" variant="outline" size="sm" onClick={addSection} disabled={isPending}>

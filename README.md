@@ -1,6 +1,6 @@
-# CCM Setlist Builder
+# Selah
 
-Contemporary worship teams use CCM Setlist Builder to curate chord charts, lyrics, and service prep in one place. This repository contains the first milestone: project scaffolding, Supabase integration, and fully wired authentication flows that match the design document.
+Selah helps worship teams pause, prepare, and worship with organized chord charts, lyrics, and service plans. This repository contains the core app with Supabase integration, authentication, and the search-first song library.
 
 ## Tech Stack
 
@@ -27,12 +27,12 @@ Contemporary worship teams use CCM Setlist Builder to curate chord charts, lyric
    NEXT_PUBLIC_SUPABASE_URL=https://aqsabhygtzunggyqkzbg.supabase.co
    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxc2FiaHlndHp1bmdneXFremJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0OTI3MzIsImV4cCI6MjA3ODA2ODczMn0.zAVxS7Fe4lI2bkPzHP3I9KFffOJKs__nqZCD8QfeztY
    ```
-   These values point to the `ccm-setlist-builder` project in the `ccm-saas` organization. If you rotate the keys, update this file accordingly.
+   These values point to the Selah Supabase project in the `ccm-saas` organization. If you rotate the keys, update this file accordingly.
 4. **Run the development server**:
    ```bash
    npm run dev
    ```
-   Visit http://localhost:3000 to explore the marketing landing page and auth flows.
+   Visit http://localhost:3000 to explore the Selah landing page and auth flows.
 
 ## Supabase Configuration
 
@@ -102,4 +102,4 @@ Contemporary worship teams use CCM Setlist Builder to curate chord charts, lyric
 
 ## License
 
-Private work product for the CCM Setlist Builder SaaS. Distribution requires project owner approval.
+Private work product for the Selah SaaS. Distribution requires project owner approval.
