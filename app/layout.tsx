@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s | Selah",
   },
   description:
-    "Selah — Pause. Prepare. Worship. Plan and share worship charts with clarity and confidence.",
+    "Selah — Pause. Prepare. Worship. Plan and share your setlists with clarity and confidence.",
 };
 
 const geistSans = Geist({
