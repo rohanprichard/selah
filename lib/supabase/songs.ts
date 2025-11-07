@@ -108,7 +108,7 @@ export async function fetchSongDetail(id: string): Promise<SongDetailResult> {
 
   const { data, error } = await supabase
     .from("songs")
-    .select("*, song_sections(*), profiles(full_name)")
+    .select("*, song_sections(*)")
     .eq("id", id)
     .order("order_index", { foreignTable: "song_sections", ascending: true })
     .maybeSingle();
@@ -117,20 +117,27 @@ export async function fetchSongDetail(id: string): Promise<SongDetailResult> {
     throw new Error(error?.message ?? "Song not found");
   }
 
-  const { song_sections: rawSections, profiles, ...rest } = data as Song & {
+  const { song_sections: rawSections, ...rest } = data as Song & {
     song_sections: SongSection[] | null;
-    profiles: { full_name: string | null } | null;
   };
 
   const sections = (rawSections ?? []).sort(
     (a, b) => (a.order_index ?? 0) - (b.order_index ?? 0),
   );
 
+  let ownerName: string | null = null;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", rest.created_by)
+    .maybeSingle();
+  ownerName = profile?.full_name ?? null;
+
   return {
     song: rest,
     sections,
     isOwner: Boolean(user && user.id === rest.created_by),
-    ownerName: profiles?.full_name ?? null,
+    ownerName,
   };
 }
 
