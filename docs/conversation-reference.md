@@ -2,7 +2,7 @@
 
 This document summarizes the major requests and responses exchanged while building and polishing Selah.
 
-## Timeline Highlights
+## Timeline Highlights 
 
 1. **Initial Planning**  
    - Drafted multi-phase roadmap for CCM Setlist Builder.  
