@@ -26,9 +26,10 @@ type SongViewerProps = {
   song: Song;
   sections: SongSection[];
   isOwner: boolean;
+  ownerName: string | null;
 };
 
-export function SongViewer({ song, sections, isOwner }: SongViewerProps) {
+export function SongViewer({ song, sections, isOwner, ownerName }: SongViewerProps) {
   const [transposeSteps, setTransposeSteps] = React.useState(0);
   const [fontSize, setFontSize] = React.useState<FontSize>("md");
   const pathname = usePathname();
@@ -89,6 +90,7 @@ export function SongViewer({ song, sections, isOwner }: SongViewerProps) {
               <CardDescription>
                 {song.artist ? `${song.artist}` : "Unknown artist"}
                 {song.writer ? ` • Written by ${song.writer}` : ""}
+                {ownerName ? ` • Uploaded by ${ownerName}` : ""}
               </CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2 print:hidden">

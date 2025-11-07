@@ -3,7 +3,7 @@
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { MUSICAL_KEYS } from "@/lib/constants/music";
+import { KEY_OPTIONS } from "@/lib/constants/music";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,9 @@ export function SongFilters({
   const [query, setQuery] = React.useState(initialQuery);
   const [selectedKey, setSelectedKey] = React.useState(initialKey || "any");
   const [selectedTag, setSelectedTag] = React.useState(initialTag || "any");
+  const isFirstRender = React.useRef(true);
+
+  const searchParamsString = React.useMemo(() => searchParams.toString(), [searchParams]);
 
   React.useEffect(() => {
     setQuery(initialQuery);
@@ -53,7 +56,7 @@ export function SongFilters({
 
   const updateParam = React.useCallback(
     (key: string, value?: string, options?: { replace?: boolean }) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParamsString);
       if (!value) {
         params.delete(key);
       } else {
@@ -61,9 +64,14 @@ export function SongFilters({
       }
       params.delete("page");
 
-      const paramString = params.toString();
       const basePath = pathname || "/songs";
-      const target = paramString ? `${basePath}?${paramString}` : basePath;
+      const newParamString = params.toString();
+      const target = newParamString ? `${basePath}?${newParamString}` : basePath;
+      const current = searchParamsString ? `${basePath}?${searchParamsString}` : basePath;
+
+      if (target === current) {
+        return;
+      }
 
       if (options?.replace) {
         router.replace(target);
@@ -71,10 +79,15 @@ export function SongFilters({
         router.push(target);
       }
     },
-    [pathname, router, searchParams],
+    [pathname, router, searchParamsString],
   );
 
   React.useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
     const handler = setTimeout(() => {
       updateParam("q", query || undefined, { replace: true });
     }, QUERY_DEBOUNCE_MS);
@@ -124,9 +137,9 @@ export function SongFilters({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="any">Any key</SelectItem>
-            {MUSICAL_KEYS.map((key) => (
-              <SelectItem key={key} value={key}>
-                {key}
+            {KEY_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
               </SelectItem>
             ))}
           </SelectContent>

@@ -3,8 +3,14 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 
-import { MUSICAL_KEYS, SECTION_TYPES, type SectionType } from "@/lib/constants/music";
+import {
+  KEY_OPTIONS,
+  SECTION_TYPES,
+  type SectionType,
+} from "@/lib/constants/music";
 import type { Song, SongSection } from "@/lib/types";
+import type { CreateSongInput, UpdateSongInput } from "@/lib/validation/songs";
+import { createSongAction, updateSongAction } from "@/app/songs/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,8 +24,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { CreateSongInput, UpdateSongInput } from "@/app/songs/actions";
-import { createSongAction, updateSongAction } from "@/app/songs/actions";
 import { toast } from "sonner";
 import { ArrowDown, ArrowUp, Loader2, Plus, Trash2 } from "lucide-react";
 
@@ -42,6 +46,19 @@ type EditorSection = {
   lyrics: string;
 };
 
+type FormState = {
+  title: string;
+  artist: string;
+  writer: string;
+  key: string;
+  tempo: string;
+  timeSignature: string;
+  youtubeUrl: string;
+  tags: string;
+  isPublic: boolean;
+  sections: EditorSection[];
+};
+
 type FieldErrors = Record<string, string[]>;
 
 export function SongEditor({ mode, song, sections = [] }: SongEditorProps) {
@@ -49,7 +66,7 @@ export function SongEditor({ mode, song, sections = [] }: SongEditorProps) {
   const [isPending, startTransition] = React.useTransition();
   const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({});
 
-  const [form, setForm] = React.useState(() => buildInitialState(mode, song, sections));
+  const [form, setForm] = React.useState<FormState>(() => buildInitialState(mode, song, sections));
 
   const updateField = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -179,9 +196,9 @@ export function SongEditor({ mode, song, sections = [] }: SongEditorProps) {
                 <SelectValue placeholder="Choose a key" />
               </SelectTrigger>
               <SelectContent>
-                {MUSICAL_KEYS.map((key) => (
-                  <SelectItem key={key} value={key}>
-                    {key}
+                {KEY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -277,7 +294,7 @@ export function SongEditor({ mode, song, sections = [] }: SongEditorProps) {
   );
 }
 
-function buildInitialState(mode: "create" | "edit", song?: Song, sections: SongSection[] = []) {
+function buildInitialState(mode: "create" | "edit", song?: Song, sections: SongSection[] = []): FormState {
   if (mode === "edit" && song) {
     return {
       title: song.title,
@@ -305,7 +322,7 @@ function buildInitialState(mode: "create" | "edit", song?: Song, sections: SongS
     title: "",
     artist: "",
     writer: "",
-    key: MUSICAL_KEYS[0] as string,
+    key: KEY_OPTIONS[0].value,
     tempo: "",
     timeSignature: "4/4",
     youtubeUrl: "",

@@ -1,12 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { MUSICAL_KEYS, type MusicalKey } from "@/lib/constants/music";
+import { normalizeMusicalKey } from "@/lib/constants/music";
 import { createClient } from "@/lib/supabase/server";
 import type { Song, SongSection } from "@/lib/types";
 
 export type SongFilters = {
   query?: string;
-  key?: MusicalKey | "";
+  key?: string;
   tag?: string;
   page?: number;
   pageSize?: number;
@@ -43,8 +43,9 @@ export async function fetchPublicSongs(filters: SongFilters = {}): Promise<Songs
     );
   }
 
-  if (key && MUSICAL_KEYS.includes(key)) {
-    songsQuery = songsQuery.eq("key", key);
+  const normalizedKey = normalizeMusicalKey(key);
+  if (normalizedKey) {
+    songsQuery = songsQuery.eq("key", normalizedKey);
   }
 
   if (tag.trim()) {
@@ -92,10 +93,16 @@ async function fetchAvailableTags(supabase: SupabaseClient): Promise<string[]> {
   return Array.from(tags).sort((a, b) => a.localeCompare(b));
 }
 
+export async function fetchAvailableSongTags(): Promise<string[]> {
+  const supabase = await createClient();
+  return fetchAvailableTags(supabase);
+}
+
 export type SongDetailResult = {
   song: Song;
   sections: SongSection[];
   isOwner: boolean;
+  ownerName: string | null;
 };
 
 export async function fetchSongDetail(id: string): Promise<SongDetailResult> {
@@ -123,10 +130,19 @@ export async function fetchSongDetail(id: string): Promise<SongDetailResult> {
     (a, b) => (a.order_index ?? 0) - (b.order_index ?? 0),
   );
 
+  let ownerName: string | null = null;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", rest.created_by)
+    .maybeSingle();
+  ownerName = profile?.full_name ?? null;
+
   return {
     song: rest,
     sections,
     isOwner: Boolean(user && user.id === rest.created_by),
+    ownerName,
   };
 }
 
