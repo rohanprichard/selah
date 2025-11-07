@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "sonner";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -45,13 +46,23 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+          >
+            Skip to content
+          </a>
           <div className="flex min-h-screen flex-col">
             {header}
-            <main className="flex-1 bg-gradient-to-b from-background via-background to-background/60">
+            <main
+              id="main-content"
+              className="flex-1 bg-gradient-to-b from-background via-background to-background/60"
+            >
               {children}
             </main>
             <SiteFooter />
           </div>
+          <Toaster richColors theme="system" />
         </ThemeProvider>
       </body>
     </html>

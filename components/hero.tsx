@@ -23,7 +23,7 @@ export function Hero() {
           <Link href="/auth/sign-up">Create free account</Link>
         </Button>
         <Button asChild size="lg" variant="outline">
-          <Link href="/">Browse public songs</Link>
+          <Link href="/songs">Browse public songs</Link>
         </Button>
       </div>
     </section>

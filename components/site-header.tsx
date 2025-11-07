@@ -4,7 +4,7 @@ import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const navLinks = [
-  { href: "/", label: "Browse" },
+  { href: "/songs", label: "Browse" },
   { href: "/my-songs", label: "My Songs" },
 ];
 
