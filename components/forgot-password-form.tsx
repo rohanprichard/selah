@@ -61,7 +61,7 @@ export function ForgotPasswordForm({
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Take a moment, then check your inbox (and spam folder) for the Selah reset email.
+              Wait a moment, then check your inbox (and spam folder) for the reset email.
             </p>
           </CardContent>
         </Card>
