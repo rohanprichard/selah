@@ -60,7 +60,7 @@ export function UpdatePasswordForm({
         <CardHeader>
           <CardTitle className="text-2xl">Set a new password</CardTitle>
           <CardDescription>
-            Create a fresh password to step back into Selah.
+            Create a fresh password.
           </CardDescription>
         </CardHeader>
         <CardContent>
