@@ -41,7 +41,7 @@ export function MySongsTable({ songs }: MySongsTableProps) {
         <div className="mx-auto flex max-w-md flex-col items-center gap-4">
           <p className="text-base font-medium text-foreground">Your Selah space is ready.</p>
           <p className="text-sm text-muted-foreground">
-            Take a moment. What songs is God placing on your heart for this season?
+            What is your song today?
           </p>
           <Button asChild>
             <Link href="/songs/new">Create your first song</Link>
