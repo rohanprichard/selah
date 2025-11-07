@@ -40,6 +40,7 @@ Contemporary worship teams use CCM Setlist Builder to curate chord charts, lyric
 - **Region**: `us-east-1`
 - **Auth settings**:
   - Enable email/password sign-in (default).
+  - Turn on the Google provider and supply the client ID/secret from the Google Cloud Console.
   - Add the following redirect URLs under *Authentication → URL Configuration*:
     - `http://localhost:3000/auth/update-password`
     - `http://localhost:3000/auth/sign-up`

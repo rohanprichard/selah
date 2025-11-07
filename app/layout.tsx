@@ -57,8 +57,8 @@ export default async function RootLayout({
             <main
               id="main-content"
               className="flex-1 bg-gradient-to-b from-background via-background to-background/60"
-            >
-              {children}
+        >
+          {children}
             </main>
             <SiteFooter />
           </div>

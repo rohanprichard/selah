@@ -21,24 +21,18 @@ export default function Home() {
     },
   ];
 
-  const roadmapLinks = [
+  const workflow = [
     {
-      href: "/auth/sign-up",
-      title: "Create your account",
-      description:
-        "Enable secure email-based access so you can save private songs and manage your team’s library.",
+      title: "Search the catalog",
+      description: "Discover trusted arrangements from other ministries or reuse your past charts in seconds.",
     },
     {
-      href: "/my-songs",
-      title: "Draft your first song",
-      description:
-        "Use the editor stub to outline metadata and sections that we’ll flesh out in the next milestone.",
+      title: "Customize sections",
+      description: "Update chords, lyrics, and ordering with a purpose-built editor that keeps everything in sync.",
     },
     {
-      href: "https://tonaljs.github.io/tonal/",
-      title: "Review transpose tooling",
-      description:
-        "We’ll integrate Tonal.js to power the live chord transposition workflow described in the spec.",
+      title: "Share with your team",
+      description: "Send polished charts to vocalists, band members, and tech volunteers so everyone shows up ready.",
     },
   ];
 
@@ -59,40 +53,43 @@ export default function Home() {
         ))}
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-1 bg-muted/30">
+      <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
+        <Card className="bg-muted/30">
           <CardHeader>
-            <CardTitle>Project status</CardTitle>
+            <CardTitle>Run your next setlist with confidence</CardTitle>
             <CardDescription>
-              Milestone 1 delivers authentication, Supabase connectivity, and the
-              groundwork for the song catalog experience.
+              CCM Setlist Builder keeps your entire worship workflow in one place—from discovery to rehearsal.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            <p>
-              Upcoming work focuses on browse/search, the chord-aware song editor,
-              and collaborative workflows as outlined in the design doc.
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>What’s next</CardTitle>
-            <CardDescription>
-              Key follow-ups to finish the MVP feature set.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            {roadmapLinks.map((item) => (
-              <div key={item.href} className="rounded-md border border-border/60 p-4">
-                <Link href={item.href} className="text-base font-medium text-primary">
-                  {item.title}
-                </Link>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {item.description}
-                </p>
+          <CardContent className="space-y-6 text-sm text-muted-foreground">
+            {workflow.map((item) => (
+              <div key={item.title}>
+                <h3 className="text-base font-semibold text-foreground">{item.title}</h3>
+                <p className="mt-1">{item.description}</p>
               </div>
             ))}
+          </CardContent>
+        </Card>
+        <Card className="flex flex-col justify-between">
+          <CardHeader>
+            <CardTitle>Ready to get started?</CardTitle>
+            <CardDescription>
+              Create a free account to save private charts or jump straight into the public library to find inspiration.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <Link
+              href="/auth/sign-up"
+              className="rounded-md bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90"
+            >
+              Create an account
+            </Link>
+            <Link
+              href="/songs"
+              className="rounded-md border border-border px-4 py-2 text-center text-sm font-medium text-foreground transition hover:bg-muted"
+            >
+              Search the library
+            </Link>
           </CardContent>
         </Card>
       </section>

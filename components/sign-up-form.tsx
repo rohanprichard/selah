@@ -61,6 +61,26 @@ export function SignUpForm({
     }
   };
 
+  const handleGoogleSignUp = async () => {
+    const supabase = createClient();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: callbackUrl,
+        },
+      });
+      if (error) throw error;
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : "Unable to start Google sign-in");
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -120,6 +140,13 @@ export function SignUpForm({
               </Link>
             </div>
           </form>
+        </CardContent>
+        <CardContent>
+          <div className="flex flex-col gap-3">
+            <Button type="button" variant="outline" onClick={handleGoogleSignUp} disabled={isLoading}>
+              Continue with Google
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

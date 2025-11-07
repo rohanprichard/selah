@@ -10,13 +10,23 @@ export async function AuthButton() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const email = typeof user?.email === "string" ? user.email : undefined;
+  const profileName = user
+    ? (
+        await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .maybeSingle()
+      ).data?.full_name ?? undefined
+    : undefined;
+
+  const displayName = profileName || user?.email || undefined;
 
   return user ? (
     <div className="flex items-center gap-3 text-sm">
-      {email ? (
-        <span className="hidden text-muted-foreground sm:inline" title={email}>
-          Signed in as {email}
+      {displayName ? (
+        <span className="hidden text-muted-foreground sm:inline" title={displayName}>
+          Hey, {displayName}!
         </span>
       ) : null}
       <LogoutButton />

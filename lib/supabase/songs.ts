@@ -93,6 +93,11 @@ async function fetchAvailableTags(supabase: SupabaseClient): Promise<string[]> {
   return Array.from(tags).sort((a, b) => a.localeCompare(b));
 }
 
+export async function fetchAvailableSongTags(): Promise<string[]> {
+  const supabase = await createClient();
+  return fetchAvailableTags(supabase);
+}
+
 export type SongDetailResult = {
   song: Song;
   sections: SongSection[];
