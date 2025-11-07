@@ -114,7 +114,7 @@ function SearchPrompt() {
         <div className="space-y-2">
           <h2 className="text-xl font-semibold">Find the right chart</h2>
           <p className="text-sm text-muted-foreground">
-            Take a breath, then search by title, artist, tag, or key to surface the song you need.
+            Search by title, artist, tag, or key to find the right song for your set.
           </p>
         </div>
       </CardContent>
@@ -132,7 +132,7 @@ function EmptyState() {
         <div>
           <h2 className="text-lg font-semibold">No songs found</h2>
           <p className="text-sm text-muted-foreground">
-            Try a different title, adjust the key, or explore another tag to keep the moment moving.
+            Try a different title, or explore another tag.
           </p>
         </div>
       </CardContent>
