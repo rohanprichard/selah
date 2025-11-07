@@ -10,10 +10,10 @@ export function Hero() {
           Selah — Pause. Prepare. Worship.
         </div>
         <h1 className="text-balance text-4xl font-semibold leading-tight sm:text-5xl">
-          A calm space to get every worship moment ready.
+          A calm space to get everyone ready to worship.
         </h1>
         <p className="text-pretty text-base text-muted-foreground sm:text-lg">
-          Selah keeps lyrics, chords, and preparation in one beautiful home so you can pause, plan, and step onstage with confidence.
+          Selah keeps lyrics, chords, and preparation in one home so you can pause, plan, and step onstage with confidence.
         </p>
       </div>
       <div className="flex flex-wrap items-center justify-center gap-4">
