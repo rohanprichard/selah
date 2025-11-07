@@ -1,6 +1,6 @@
 # AI Song Import API
 
-This API endpoint allows trusted automation (for example, an AI agent) to create songs and their sections in the CCM Setlist Builder database. It uses the Supabase service role key under the hood, so keep the credentials secret and only expose the endpoint to controlled environments.
+This API endpoint allows trusted automation (for example, an AI agent) to create songs and their sections in the Selah database. It uses the Supabase service role key under the hood, so keep the credentials secret and only expose the endpoint to controlled environments.
 
 ## Endpoint Summary
 
@@ -109,17 +109,4 @@ curl -X POST https://your-domain.com/api/songs \
 
 - `401` – Missing or invalid token
 - `422` – Validation errors (schema mismatch, unsupported key, etc.). The response includes `fieldErrors` keyed by path.
-- `500` – Unexpected server failure (Supabase insert error, misconfiguration)
-
-## Operational Notes
-
-- The endpoint revalidates `/songs`, `/my-songs`, and the specific song detail page to keep the UI in sync immediately after imports.
-- Use a dedicated Supabase user for `createdBy` when ingesting songs so audit logs stay meaningful.
-- Consider rate-limiting or wrapping the endpoint behind an internal gateway if you expect heavy automated usage.
-
-## Local Testing Checklist
-
-1. Add `SUPABASE_SERVICE_ROLE_KEY` and `AI_SONG_IMPORT_TOKEN` to `.env.local`.
-2. Run `npm run dev` and execute the `curl` example against `http://localhost:3000/api/songs`.
-3. Confirm the new song appears instantly on `/songs` and `/my-songs`.
-4. For CI, add a smoke test that posts a fixture payload and asserts a `201` response.
+- `

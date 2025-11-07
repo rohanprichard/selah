@@ -56,23 +56,21 @@ export function ForgotPasswordForm({
       {success ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
-            <CardDescription>Password reset instructions sent</CardDescription>
+            <CardTitle className="text-2xl">Email sent</CardTitle>
+            <CardDescription>Follow the link to finish resetting your password.</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              If you registered using your email and password, you will receive
-              a password reset email.
+              Wait a moment, then check your inbox (and spam folder) for the reset email.
             </p>
           </CardContent>
         </Card>
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Reset Your Password</CardTitle>
+            <CardTitle className="text-2xl">Reset your password</CardTitle>
             <CardDescription>
-              Type in your email and we&apos;ll send you a link to reset your
-              password
+              Enter the email tied to your Selah account and we&apos;ll send a reset link.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -100,7 +98,7 @@ export function ForgotPasswordForm({
                   href="/auth/login"
                   className="underline underline-offset-4"
                 >
-                  Login
+                  Sign in
                 </Link>
               </div>
             </form>

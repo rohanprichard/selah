@@ -6,33 +6,30 @@ export default function Home() {
   const features = [
     {
       title: "Song Library",
-      description:
-        "Curate public and private chord charts with metadata for key, tempo, tags, and embedded videos.",
+      description: "Collect chords, lyrics, and resources in one trusted place.",
     },
     {
       title: "Arrangements",
-      description:
-        "Compose sections with inline chord notation, fast reordering, and instant chord-over-lyric previews.",
+      description: "Shape sections quickly with inline chords, reordering, and clean previews.",
     },
     {
       title: "Team-Friendly",
-      description:
-        "Invite your worship team to view setlists, transpose charts on the fly, and stay aligned week to week.",
+      description: "Share transposable charts so every musician arrives prepared and confident.",
     },
   ];
 
   const workflow = [
     {
       title: "Search the catalog",
-      description: "Discover trusted arrangements from other ministries or reuse your past charts in seconds.",
+      description: "Find proven arrangements from the community or remix your own favourites.",
     },
     {
       title: "Customize sections",
-      description: "Update chords, lyrics, and ordering with a purpose-built editor that keeps everything in sync.",
+      description: "Fine-tune lyrics, chords, and flow without breaking your rhythm.",
     },
     {
       title: "Share with your team",
-      description: "Send polished charts to vocalists, band members, and tech volunteers so everyone shows up ready.",
+      description: "Send detailed lyrics to vocals, chords to band, and the flow to tech so everyone can worship together in harmony.",
     },
   ];
 
@@ -56,9 +53,9 @@ export default function Home() {
       <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
         <Card className="bg-muted/30">
           <CardHeader>
-            <CardTitle>Run your next setlist with confidence</CardTitle>
+            <CardTitle>Pause. Prepare. Worship.</CardTitle>
             <CardDescription>
-              CCM Setlist Builder keeps your entire worship workflow in one place—from discovery to rehearsal.
+              Selah keeps your worship prep smooth and coordinated from discovery to rehearsal.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 text-sm text-muted-foreground">
@@ -72,9 +69,9 @@ export default function Home() {
         </Card>
         <Card className="flex flex-col justify-between">
           <CardHeader>
-            <CardTitle>Ready to get started?</CardTitle>
+            <CardTitle>Begin with Selah</CardTitle>
             <CardDescription>
-              Create a free account to save private charts or jump straight into the public library to find inspiration.
+              Create a free account to save private charts or explore the public library for inspiration.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">

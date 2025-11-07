@@ -7,16 +7,16 @@ from typing import Any, Dict, List
 from supabase import create_client
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-CONTENT_USER_ID = os.environ.get("CCM_CONTENT_USER_ID")  # auth.users UUID that should own the song
+SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+CONTENT_USER_ID = os.environ.get("SELAH_CONTENT_USER_ID") or os.environ.get("CCM_CONTENT_USER_ID")  # auth.users UUID that should own the song
 
-if not SUPABASE_URL or not SERVICE_ROLE_KEY:
+if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
     sys.exit("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set.")
 
 if not CONTENT_USER_ID:
-    sys.exit("CCM_CONTENT_USER_ID must be set to a valid auth user UUID.")
+    sys.exit("SELAH_CONTENT_USER_ID must be set to a valid auth user UUID.")
 
-client = create_client(SUPABASE_URL, SERVICE_ROLE_KEY)
+client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 SONG: Dict[str, Any] = {
     "title": "Amazing Grace",

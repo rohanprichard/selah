@@ -27,9 +27,9 @@ export default async function MySongsPage() {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-12">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold">My Songs</h1>
+          <h1 className="text-3xl font-semibold">My songs</h1>
           <p className="text-sm text-muted-foreground">
-            Create, edit, and manage your private and public chord charts.
+            Find and upload your lyrics and charts here.
           </p>
         </div>
         <Button asChild>

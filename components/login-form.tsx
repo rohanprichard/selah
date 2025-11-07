@@ -76,9 +76,9 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Sign in to Selah</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter your details, and step back into your preparation.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -115,7 +115,7 @@ export function LoginForm({
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
@@ -132,7 +132,7 @@ export function LoginForm({
         <CardContent>
           <div className="flex flex-col gap-3">
             <Button type="button" variant="outline" onClick={handleGoogleLogin} disabled={isLoading}>
-              Continue with Google
+              Sign in with Google
             </Button>
           </div>
         </CardContent>

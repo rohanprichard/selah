@@ -37,8 +37,16 @@ export function MySongsTable({ songs }: MySongsTableProps) {
 
   if (songs.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 p-10 text-center text-sm text-muted-foreground">
-        You haven’t created any songs yet. Start by clicking “Create song”.
+      <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 p-10 text-center">
+        <div className="mx-auto flex max-w-md flex-col items-center gap-4">
+          <p className="text-base font-medium text-foreground">Your Selah space is ready.</p>
+          <p className="text-sm text-muted-foreground">
+            What is your song today?
+          </p>
+          <Button asChild>
+            <Link href="/songs/new">Create your first song</Link>
+          </Button>
+        </div>
       </div>
     );
   }

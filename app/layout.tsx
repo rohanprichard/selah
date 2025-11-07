@@ -15,11 +15,11 @@ const defaultUrl = process.env.VERCEL_URL
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: {
-    default: "CCM Setlist Builder",
-    template: "%s | CCM Setlist Builder",
+    default: "Selah",
+    template: "%s | Selah",
   },
   description:
-    "Plan, share, and lead worship sets with collaborative chord charts and lyrics.",
+    "Selah — Pause. Prepare. Worship. Plan and share your setlists with clarity and confidence.",
 };
 
 const geistSans = Geist({
@@ -42,7 +42,7 @@ export default async function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
