@@ -27,7 +27,7 @@ Selah helps worship teams pause, prepare, and worship with organized chord chart
    NEXT_PUBLIC_SUPABASE_URL=https://aqsabhygtzunggyqkzbg.supabase.co
    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxc2FiaHlndHp1bmdneXFremJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0OTI3MzIsImV4cCI6MjA3ODA2ODczMn0.zAVxS7Fe4lI2bkPzHP3I9KFffOJKs__nqZCD8QfeztY
    ```
-   These values point to the Selah Supabase project in the `ccm-saas` organization. If you rotate the keys, update this file accordingly.
+   These values point to the ccm-saas Supabase project in the `ccm-saas` organization. If you rotate the keys, update this file accordingly.
 4. **Run the development server**:
    ```bash
    npm run dev
