@@ -18,7 +18,7 @@ export default function Page() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Pause for a moment, then open your inbox to confirm your account before signing in.
+                Please open your inbox to confirm your account before signing in.
               </p>
             </CardContent>
           </Card>
