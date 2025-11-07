@@ -6,7 +6,7 @@ export default function Home() {
   const features = [
     {
       title: "Song Library",
-      description: "Collect chords, lyrics, and resources in one trusted place for your team.",
+      description: "Collect chords, lyrics, and resources in one trusted place.",
     },
     {
       title: "Arrangements",
@@ -21,7 +21,7 @@ export default function Home() {
   const workflow = [
     {
       title: "Search the catalog",
-      description: "Find proven arrangements from the community or resurface your own favourites.",
+      description: "Find proven arrangements from the community or remix your own favourites.",
     },
     {
       title: "Customize sections",
@@ -29,7 +29,7 @@ export default function Home() {
     },
     {
       title: "Share with your team",
-      description: "Send beautiful charts to vocals, band, and tech so everyone leads together.",
+      description: "Send detailed lyrics to vocals, chords to band, and the flow to tech so everyone can worship together in harmony.",
     },
   ];
 
@@ -55,7 +55,7 @@ export default function Home() {
           <CardHeader>
             <CardTitle>Pause. Prepare. Worship.</CardTitle>
             <CardDescription>
-              Selah keeps your worship workflow calm and coordinated from discovery to rehearsal.
+              Selah keeps your worship prep smooth and coordinated from discovery to rehearsal.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 text-sm text-muted-foreground">
