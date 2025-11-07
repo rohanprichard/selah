@@ -78,7 +78,7 @@ export function LoginForm({
         <CardHeader>
           <CardTitle className="text-2xl">Sign in to Selah</CardTitle>
           <CardDescription>
-            Settle in, enter your details, and step back into your setlist.
+            Enter your details, and step back into your preparation.
           </CardDescription>
         </CardHeader>
         <CardContent>
