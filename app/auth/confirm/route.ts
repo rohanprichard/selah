@@ -21,7 +21,11 @@ export async function GET(request: NextRequest) {
       const fullName =
         typeof data.user.user_metadata?.full_name === "string"
           ? data.user.user_metadata.full_name
-          : null;
+          : typeof data.user.user_metadata?.fullName === "string"
+            ? data.user.user_metadata.fullName
+            : typeof data.user.user_metadata?.name === "string"
+              ? data.user.user_metadata.name
+            : null;
 
       await supabase.from("profiles").upsert(
         {

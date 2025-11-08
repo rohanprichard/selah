@@ -25,6 +25,7 @@ export function SignUpForm({
   redirectTo = "/my-songs",
   ...props
 }: SignUpFormProps) {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
@@ -38,6 +39,12 @@ export function SignUpForm({
     setIsLoading(true);
     setError(null);
 
+    if (!fullName.trim()) {
+      setError("Please enter your full name");
+      setIsLoading(false);
+      return;
+    }
+
     if (password !== repeatPassword) {
       setError("Passwords do not match");
       setIsLoading(false);
@@ -50,6 +57,9 @@ export function SignUpForm({
         password,
         options: {
           emailRedirectTo: `${window.location.origin}${redirectTo}`,
+          data: {
+            full_name: fullName.trim(),
+          },
         },
       });
       if (error) throw error;
@@ -91,6 +101,16 @@ export function SignUpForm({
         <CardContent>
           <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="full-name">Full name</Label>
+                <Input
+                  id="full-name"
+                  placeholder="Sarah Worship Leader"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input

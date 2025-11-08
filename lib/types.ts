@@ -31,3 +31,25 @@ export type SongWithSections = Song & {
   sections: SongSection[];
 };
 
+export type Setlist = {
+  id: string;
+  title: string;
+  description: string | null;
+  share_token: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SetlistSong = {
+  id: string;
+  setlist_id: string;
+  song_id: string;
+  order_index: number;
+  custom_key: string | null;
+  custom_tempo: number | null;
+  custom_time_signature: string | null;
+  notes: string | null;
+  created_at: string;
+};
+

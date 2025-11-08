@@ -6,7 +6,11 @@ import { cookies } from "next/headers";
  * global variable. Always create a new client within each function when using
  * it.
  */
-export async function createClient() {
+export type CreateClientOptions = {
+  headers?: Record<string, string>;
+};
+
+export async function createClient(options: CreateClientOptions = {}) {
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -29,6 +33,7 @@ export async function createClient() {
           }
         },
       },
+      global: options.headers ? { headers: options.headers } : undefined,
     },
   );
 }

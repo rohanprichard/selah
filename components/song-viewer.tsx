@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { buildChordDisplay, parseLyrics, transposeLines, type ParsedSection } from "@/lib/chords";
 import type { Song, SongSection } from "@/lib/types";
 
-import { Edit3, Minus, Plus, Printer, Share2 } from "lucide-react";
+import { Edit3, Minus, Plus, Printer, Share2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
 const FONT_SIZES = {
@@ -27,12 +27,35 @@ type SongViewerProps = {
   sections: SongSection[];
   isOwner: boolean;
   ownerName: string | null;
+  canRemix: boolean;
+  notes?: string | null;
+  initialTranspose?: number;
+  overrideKey?: string | null;
+  overrideTempo?: number | null;
+  overrideTimeSignature?: string | null;
 };
 
-export function SongViewer({ song, sections, isOwner, ownerName }: SongViewerProps) {
-  const [transposeSteps, setTransposeSteps] = React.useState(0);
+export function SongViewer({
+  song,
+  sections,
+  isOwner,
+  ownerName,
+  canRemix,
+  notes,
+  initialTranspose,
+  overrideKey,
+  overrideTempo,
+  overrideTimeSignature,
+}: SongViewerProps) {
+  const [transposeSteps, setTransposeSteps] = React.useState(initialTranspose ?? 0);
   const [fontSize, setFontSize] = React.useState<FontSize>("md");
   const pathname = usePathname();
+
+  React.useEffect(() => {
+    if (typeof initialTranspose === "number") {
+      setTransposeSteps(initialTranspose);
+    }
+  }, [initialTranspose]);
 
   const parsedSections = React.useMemo(() => {
     return sections.map<ParsedSection>((section) => ({
@@ -80,6 +103,29 @@ export function SongViewer({ song, sections, isOwner, ownerName }: SongViewerPro
     }
   };
 
+  const displayedKey = React.useMemo(() => transposeLabel(song.key, transposeSteps), [song.key, transposeSteps]);
+  
+  const keySecondaryParts: string[] = [];
+  if (overrideKey && overrideKey !== song.key) {
+    keySecondaryParts.push(`Setlist: ${overrideKey}`);
+  }
+  if (song.key !== displayedKey) {
+    keySecondaryParts.push(`Original: ${song.key}`);
+  }
+  const keySecondary = keySecondaryParts.length ? keySecondaryParts.join(" · ") : undefined;
+
+  const displayTempo = overrideTempo ?? song.tempo;
+  const tempoSecondary =
+    overrideTempo && song.tempo && overrideTempo !== song.tempo
+      ? `Original: ${song.tempo} BPM`
+      : undefined;
+
+  const displayTimeSignature = overrideTimeSignature ?? song.time_signature;
+  const timeSignatureSecondary =
+    overrideTimeSignature && song.time_signature && overrideTimeSignature !== song.time_signature
+      ? `Original: ${song.time_signature}`
+      : undefined;
+
   return (
     <div className="space-y-10">
       <Card className="print:border-none print:shadow-none">
@@ -108,6 +154,14 @@ export function SongViewer({ song, sections, isOwner, ownerName }: SongViewerPro
                 <Printer className="h-4 w-4" />
                 <span className="sr-only">Print</span>
               </Button>
+              {canRemix ? (
+                <Button asChild variant="outline" size="icon" title="Remix song">
+                  <Link href={`/songs/${song.id}/remix`}>
+                    <Wand2 className="h-4 w-4" />
+                    <span className="sr-only">Remix song</span>
+                  </Link>
+                </Button>
+              ) : null}
               {isOwner ? (
                 <Button asChild variant="default" size="icon" title="Edit song">
                   <Link href={`/songs/${song.id}/edit`}>
@@ -120,13 +174,14 @@ export function SongViewer({ song, sections, isOwner, ownerName }: SongViewerPro
           </div>
 
           <dl className="grid grid-cols-2 gap-3 text-sm text-muted-foreground print:hidden sm:grid-cols-4">
+            <MetadataItem label="Key" value={displayedKey} secondary={keySecondary} />
             <MetadataItem label="Original Key" value={song.key} />
+            <MetadataItem label="Tempo" value={displayTempo ? `${displayTempo} BPM` : "—"} secondary={tempoSecondary} />
             <MetadataItem
-              label="Current Key"
-              value={transposeSteps === 0 ? song.key : transposeLabel(song.key, transposeSteps)}
+              label="Time Signature"
+              value={displayTimeSignature ?? "—"}
+              secondary={timeSignatureSecondary}
             />
-            <MetadataItem label="Tempo" value={song.tempo ? `${song.tempo} BPM` : "—"} />
-            <MetadataItem label="Time signature" value={song.time_signature || "4/4"} />
           </dl>
           {Array.isArray(song.tags) && song.tags.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2 print:hidden">
@@ -138,9 +193,16 @@ export function SongViewer({ song, sections, isOwner, ownerName }: SongViewerPro
             </div>
           ) : null}
         </CardHeader>
-        <CardContent className="space-y-10">
-          {song.youtube_url ? <YouTubeEmbed url={song.youtube_url} /> : null}
-          <article className={cn("space-y-8 font-mono", FONT_SIZES[fontSize], "print:font-sans print:text-base")}> 
+        <CardContent className="space-y-6">
+          {notes ? (
+            <div className="rounded-lg border border-dashed border-foreground/10 bg-muted/30 p-4 text-sm text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-wide text-foreground">Setlist notes</p>
+              <p className="mt-2 whitespace-pre-wrap">{notes}</p>
+            </div>
+          ) : null}
+
+          {song.youtube_url ? <YouTubeEmbed url={song.youtube_url} className="print:hidden" /> : null}
+          <article className={cn("space-y-6", FONT_SIZES[fontSize])}>
             {displayedSections.map((section) => (
               <section key={section.id} className="space-y-3">
                 <header className="flex items-baseline gap-3">
@@ -189,11 +251,20 @@ function transposeLabel(original: string, steps: number): string {
   return chord || original;
 }
 
-function MetadataItem({ label, value }: { label: string; value: string }) {
+function MetadataItem({
+  label,
+  value,
+  secondary,
+}: {
+  label: string;
+  value: string | number;
+  secondary?: string;
+}) {
   return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs uppercase tracking-wide text-muted-foreground/70">{label}</span>
-      <span className="text-sm text-foreground">{value}</span>
+    <div>
+      <p className="text-xs uppercase text-muted-foreground">{label}</p>
+      <p className="text-sm font-medium text-foreground">{value}</p>
+      {secondary ? <p className="text-xs text-muted-foreground">{secondary}</p> : null}
     </div>
   );
 }
@@ -252,7 +323,7 @@ function FontSizeControls({ value, onChange }: FontSizeControlsProps) {
   );
 }
 
-function YouTubeEmbed({ url }: { url: string }) {
+function YouTubeEmbed({ url, className }: { url: string; className?: string }) {
   const embedUrl = React.useMemo(() => {
     try {
       const parsed = new URL(url);
@@ -272,7 +343,7 @@ function YouTubeEmbed({ url }: { url: string }) {
   if (!embedUrl) return null;
 
   return (
-    <div className="aspect-video w-full overflow-hidden rounded-lg border border-border bg-black">
+    <div className={cn("aspect-video w-full overflow-hidden rounded-lg border border-border bg-black", className)}>
       <iframe
         title="YouTube video player"
         src={`${embedUrl}?rel=0`}
