@@ -20,7 +20,16 @@ export async function AuthButton() {
       ).data?.full_name ?? undefined
     : undefined;
 
-  const displayName = profileName || user?.email || undefined;
+  const metadataName =
+    typeof user?.user_metadata?.full_name === "string"
+      ? user.user_metadata.full_name
+      : typeof user?.user_metadata?.fullName === "string"
+        ? user.user_metadata.fullName
+        : typeof user?.user_metadata?.name === "string"
+          ? user.user_metadata.name
+          : undefined;
+
+  const displayName = profileName || metadataName || user?.email || undefined;
 
   return user ? (
     <div className="flex items-center gap-3 text-sm">

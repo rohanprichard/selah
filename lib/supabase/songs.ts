@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { normalizeMusicalKey } from "@/lib/constants/music";
 import { createClient } from "@/lib/supabase/server";
 import type { Song, SongSection } from "@/lib/types";
+import type { CreateClientOptions } from "@/lib/supabase/server";
 
 export type SongFilters = {
   query?: string;
@@ -103,10 +104,14 @@ export type SongDetailResult = {
   sections: SongSection[];
   isOwner: boolean;
   ownerName: string | null;
+  canRemix: boolean;
 };
 
-export async function fetchSongDetail(id: string): Promise<SongDetailResult> {
-  const supabase = await createClient();
+export async function fetchSongDetail(
+  id: string,
+  options?: CreateClientOptions,
+): Promise<SongDetailResult> {
+  const supabase = await createClient(options);
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -143,6 +148,36 @@ export async function fetchSongDetail(id: string): Promise<SongDetailResult> {
     sections,
     isOwner: Boolean(user && user.id === rest.created_by),
     ownerName,
+    canRemix: Boolean(user),
+  };
+}
+
+export async function fetchSongById(id: string, options?: CreateClientOptions) {
+  const supabase = await createClient(options);
+
+  const { data: song, error: songError } = await supabase
+    .from("songs")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (songError || !song) {
+    throw new Error(songError?.message ?? "Song not found");
+  }
+
+  const { data: sections, error: sectionsError } = await supabase
+    .from("song_sections")
+    .select("*")
+    .eq("song_id", id)
+    .order("order_index", { ascending: true });
+
+  if (sectionsError) {
+    throw new Error(sectionsError.message);
+  }
+
+  return {
+    song: song as Song,
+    sections: (sections ?? []) as SongSection[],
   };
 }
 

@@ -6,6 +6,7 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 const navLinks = [
   { href: "/songs", label: "Search" },
   { href: "/my-songs", label: "My Songs" },
+  { href: "/setlists", label: "My Setlists" },
 ];
 
 export async function SiteHeader() {

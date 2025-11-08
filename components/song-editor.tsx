@@ -31,6 +31,11 @@ type SongEditorProps = {
   mode: "create" | "edit";
   song?: Song;
   sections?: SongSection[];
+  template?: {
+    song: Song;
+    sections: SongSection[];
+    titleSuffix?: string;
+  };
 };
 
 const generateId = () =>
@@ -61,12 +66,14 @@ type FormState = {
 
 type FieldErrors = Record<string, string[]>;
 
-export function SongEditor({ mode, song, sections = [] }: SongEditorProps) {
+export function SongEditor({ mode, song, sections = [], template }: SongEditorProps) {
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
   const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({});
 
-  const [form, setForm] = React.useState<FormState>(() => buildInitialState(mode, song, sections));
+  const [form, setForm] = React.useState<FormState>(() =>
+    buildInitialState({ mode, song, sections, template }),
+  );
 
   const updateField = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -166,9 +173,19 @@ export function SongEditor({ mode, song, sections = [] }: SongEditorProps) {
     <form className="space-y-8" onSubmit={handleSubmit}>
       <Card>
         <CardHeader>
-          <CardTitle>{mode === "create" ? "Create a song" : "Edit song"}</CardTitle>
+          <CardTitle>
+            {mode === "edit"
+              ? "Edit song"
+              : template
+                ? "Remix this song"
+                : "Create a song"}
+          </CardTitle>
           <CardDescription>
-            Capture the essentials so your team can rehearse with clarity.
+            {mode === "edit"
+              ? "Update the song details and keep your charts in sync."
+              : template
+                ? "Tweak the original arrangement and save your own version."
+                : "Capture the essentials so your team can rehearse with clarity."}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2">
@@ -294,7 +311,18 @@ export function SongEditor({ mode, song, sections = [] }: SongEditorProps) {
   );
 }
 
-function buildInitialState(mode: "create" | "edit", song?: Song, sections: SongSection[] = []): FormState {
+type BuildInitialStateOptions = {
+  mode: "create" | "edit";
+  song?: Song;
+  sections: SongSection[];
+  template?: {
+    song: Song;
+    sections: SongSection[];
+    titleSuffix?: string;
+  };
+};
+
+function buildInitialState({ mode, song, sections, template }: BuildInitialStateOptions): FormState {
   if (mode === "edit" && song) {
     return {
       title: song.title,
@@ -310,6 +338,32 @@ function buildInitialState(mode: "create" | "edit", song?: Song, sections: SongS
         .sort((a, b) => a.order_index - b.order_index)
         .map((section) => ({
           id: section.id,
+          tempId: generateId(),
+          type: section.type as SectionType,
+          label: section.label,
+          lyrics: section.lyrics,
+        })),
+    };
+  }
+
+  if (mode === "create" && template) {
+    const source = template.song;
+    const sourceSections = template.sections ?? [];
+    const suffix = template.titleSuffix ?? " (Remix)";
+
+    return {
+      title: `${source.title}${suffix}`,
+      artist: source.artist ?? "",
+      writer: source.writer ?? "",
+      key: source.key,
+      tempo: source.tempo ? String(source.tempo) : "",
+      timeSignature: source.time_signature ?? "4/4",
+      youtubeUrl: source.youtube_url ?? "",
+      tags: Array.isArray(source.tags) ? source.tags.join(", ") : "",
+      isPublic: false,
+      sections: sourceSections
+        .sort((a, b) => a.order_index - b.order_index)
+        .map((section) => ({
           tempId: generateId(),
           type: section.type as SectionType,
           label: section.label,
@@ -344,7 +398,7 @@ type PayloadResult =
   | { success: true; data: UpdateSongInput }
   | { success: false; fieldErrors: FieldErrors };
 
-function buildPayload(form: ReturnType<typeof buildInitialState>, songId?: string): PayloadResult {
+function buildPayload(form: FormState, songId?: string): PayloadResult {
   const tags = form.tags
     .split(",")
     .map((tag) => tag.trim())
