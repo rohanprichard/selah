@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import {
   addSetlistSongAction,
+  deleteSetlistAction,
   fetchSongSectionsAction,
   moveSetlistSongAction,
   removeSetlistSongAction,
@@ -22,6 +23,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { ArrowDown, ArrowUp, Eye, ExternalLink, Loader2, Trash2, ListOrdered } from "lucide-react";
 import { SongArrangerModal } from "@/components/setlists/song-arranger-modal";
@@ -79,6 +91,9 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
     ArrangementItem[] | null
   >(null);
   const [isSavingArrangement, setIsSavingArrangement] = React.useState(false);
+
+  // Delete state
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   React.useEffect(() => {
     setTitle(setlist.title);
@@ -215,6 +230,20 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
     });
   };
 
+  const handleDeleteSetlist = async () => {
+    setIsDeleting(true);
+    const result = await deleteSetlistAction({ id: setlist.id });
+    
+    if (!result.success) {
+      toast.error(result.error);
+      setIsDeleting(false);
+      return;
+    }
+    
+    toast.success("Setlist deleted");
+    router.push("/setlists");
+  };
+
   return (
     <div className="space-y-10">
       <Card>
@@ -251,7 +280,7 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
                 rows={3}
               />
             </div>
-            <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+            <div className="flex flex-wrap items-center justify-between gap-3 sm:col-span-2">
               <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-sm">
                 <span className="font-medium text-foreground">Share link</span>
                 <code className="rounded bg-background px-2 py-1 text-xs text-foreground">
@@ -271,6 +300,39 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
                   Copy
                 </Button>
               </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                    Delete Setlist
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this setlist?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the setlist and remove all associated songs.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteSetlist}
+                      disabled={isDeleting}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {isDeleting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Deleting...
+                        </>
+                      ) : (
+                        "Delete"
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </CardContent>
