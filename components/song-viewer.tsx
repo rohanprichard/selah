@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { buildChordDisplay, parseLyrics, transposeLines, type ParsedSection } from "@/lib/chords";
-import type { Song, SongSection } from "@/lib/types";
+import type { Song, SongSection, ArrangementItem } from "@/lib/types";
 
-import { Edit3, Minus, Plus, Printer, Share2, Wand2 } from "lucide-react";
+import { Edit3, Minus, Music, Plus, Printer, Share2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
 const FONT_SIZES = {
@@ -33,6 +33,7 @@ type SongViewerProps = {
   overrideKey?: string | null;
   overrideTempo?: number | null;
   overrideTimeSignature?: string | null;
+  arrangement?: ArrangementItem[] | null;
 };
 
 export function SongViewer({
@@ -46,9 +47,15 @@ export function SongViewer({
   overrideKey,
   overrideTempo,
   overrideTimeSignature,
+  arrangement,
 }: SongViewerProps) {
   const [transposeSteps, setTransposeSteps] = React.useState(initialTranspose ?? 0);
   const [fontSize, setFontSize] = React.useState<FontSize>("md");
+  const [showChords, setShowChords] = React.useState(() => {
+    if (typeof window === "undefined") return true;
+    const saved = localStorage.getItem("selah-show-chords");
+    return saved !== "false";
+  });
   const pathname = usePathname();
 
   React.useEffect(() => {
@@ -56,6 +63,12 @@ export function SongViewer({
       setTransposeSteps(initialTranspose);
     }
   }, [initialTranspose]);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("selah-show-chords", String(showChords));
+    }
+  }, [showChords]);
 
   const parsedSections = React.useMemo(() => {
     return sections.map<ParsedSection>((section) => ({
@@ -66,12 +79,42 @@ export function SongViewer({
     }));
   }, [sections]);
 
+  // Apply arrangement if provided
+  const arrangedSections = React.useMemo(() => {
+    if (arrangement && arrangement.length > 0) {
+      return arrangement.map((item, idx) => {
+        if (typeof item === 'number') {
+          return parsedSections[item];
+        } else {
+          // Custom section
+          if (item.sectionIndex !== undefined && parsedSections[item.sectionIndex]) {
+            // Copy of an existing section
+            return {
+              ...parsedSections[item.sectionIndex],
+              id: `custom-copy-${idx}`,
+              label: `${parsedSections[item.sectionIndex].label} (Copy)`,
+            };
+          } else {
+            // Pure custom section with text
+            return {
+              id: `custom-${idx}`,
+              label: item.label,
+              type: 'custom' as const,
+              lines: item.content ? parseLyrics(item.content) : [],
+            };
+          }
+        }
+      }).filter(Boolean);
+    }
+    return parsedSections;
+  }, [parsedSections, arrangement]);
+
   const displayedSections = React.useMemo(() => {
-    return parsedSections.map((section) => ({
+    return arrangedSections.map((section) => ({
       ...section,
       lines: transposeLines(section.lines, transposeSteps),
     }));
-  }, [parsedSections, transposeSteps]);
+  }, [arrangedSections, transposeSteps]);
 
   const handleTranspose = (amount: number) => {
     setTransposeSteps((prev) => {
@@ -103,14 +146,17 @@ export function SongViewer({
     }
   };
 
-  const displayedKey = React.useMemo(() => transposeLabel(song.key, transposeSteps), [song.key, transposeSteps]);
+  const displayedKey = React.useMemo(() => {
+    return transposeLabel(song.key, transposeSteps);
+  }, [song.key, transposeSteps]);
   
   const keySecondaryParts: string[] = [];
   if (overrideKey && overrideKey !== song.key) {
-    keySecondaryParts.push(`Setlist: ${overrideKey}`);
-  }
-  if (song.key !== displayedKey) {
+    // When viewing from setlist with custom key, just show the original
     keySecondaryParts.push(`Original: ${song.key}`);
+  } else if (song.key !== displayedKey) {
+    // When manually transposing, show where it came from
+    keySecondaryParts.push(`Transposed from ${song.key}`);
   }
   const keySecondary = keySecondaryParts.length ? keySecondaryParts.join(" · ") : undefined;
 
@@ -146,6 +192,15 @@ export function SongViewer({
                 value={transposeSteps}
               />
               <FontSizeControls value={fontSize} onChange={handleFontSize} />
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={() => setShowChords(prev => !prev)} 
+                title={showChords ? "Hide chords" : "Show chords"}
+              >
+                <Music className={cn("h-4 w-4", !showChords && "opacity-50")} />
+                <span className="sr-only">{showChords ? "Hide chords" : "Show chords"}</span>
+              </Button>
               <Button variant="outline" size="icon" onClick={handleShare} title="Copy link">
                 <Share2 className="h-4 w-4" />
                 <span className="sr-only">Copy link</span>
@@ -173,9 +228,8 @@ export function SongViewer({
             </div>
           </div>
 
-          <dl className="grid grid-cols-2 gap-3 text-sm text-muted-foreground print:hidden sm:grid-cols-4">
+          <dl className="grid grid-cols-2 gap-3 text-sm text-muted-foreground print:hidden sm:grid-cols-3">
             <MetadataItem label="Key" value={displayedKey} secondary={keySecondary} />
-            <MetadataItem label="Original Key" value={song.key} />
             <MetadataItem label="Tempo" value={displayTempo ? `${displayTempo} BPM` : "—"} secondary={tempoSecondary} />
             <MetadataItem
               label="Time Signature"
@@ -203,38 +257,57 @@ export function SongViewer({
 
           {song.youtube_url ? <YouTubeEmbed url={song.youtube_url} className="print:hidden" /> : null}
           <article className={cn("space-y-6", FONT_SIZES[fontSize])}>
-            {displayedSections.map((section) => (
-              <section key={section.id} className="space-y-3">
-                <header className="flex items-baseline gap-3">
-                  <Badge variant="secondary" className="uppercase">
-                    {section.type}
-                  </Badge>
-                  <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                    {section.label}
-                  </h2>
-                </header>
-                <div className="space-y-2">
-                  {section.lines.map((line, index) => {
-                    const chords = buildChordDisplay(line);
-                    const hasChords = chords.trim().length > 0;
-                    const key = `${section.id}-${index}`;
-                    if (!line.lyrics && !hasChords) {
-                      return <div key={key} className="h-4" />;
-                    }
-                    return (
-                      <div key={key} className="leading-relaxed">
-                        {hasChords ? (
-                          <pre className="whitespace-pre text-primary print:text-black">
-                            {chords}
+            {displayedSections.map((section, index) => (
+              <section key={`${section.id}-${index}`} className="space-y-3">
+                {section.type === 'label' || section.type === 'custom' ? (
+                  <div className="rounded-md border border-dashed border-muted bg-muted/30 p-4">
+                    <p className="text-sm font-semibold uppercase tracking-wide text-foreground">
+                      {section.label}
+                    </p>
+                    {section.lines.length > 0 && (
+                      <div className="mt-3 space-y-2 text-sm text-muted-foreground">
+                        {section.lines.map((line, lineIndex) => (
+                          <pre key={lineIndex} className="whitespace-pre-wrap">
+                            {line.lyrics || "\u00A0"}
                           </pre>
-                        ) : null}
-                        <pre className="whitespace-pre-wrap text-foreground">
-                          {line.lyrics || "\u00A0"}
-                        </pre>
+                        ))}
                       </div>
-                    );
-                  })}
-                </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <header className="flex items-baseline gap-3">
+                      <Badge variant="secondary" className="uppercase">
+                        {section.type}
+                      </Badge>
+                      <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                        {section.label}
+                      </h2>
+                    </header>
+                    <div className="space-y-2">
+                      {section.lines.map((line, lineIndex) => {
+                        const chords = buildChordDisplay(line);
+                        const hasChords = chords.trim().length > 0;
+                        const key = `${section.id}-${lineIndex}`;
+                        if (!line.lyrics && !hasChords) {
+                          return <div key={key} className="h-4" />;
+                        }
+                        return (
+                          <div key={key} className="leading-relaxed">
+                            {hasChords && showChords ? (
+                              <pre className="whitespace-pre text-primary print:text-black">
+                                {chords}
+                              </pre>
+                            ) : null}
+                            <pre className="whitespace-pre-wrap text-foreground">
+                              {line.lyrics || "\u00A0"}
+                            </pre>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </section>
             ))}
           </article>

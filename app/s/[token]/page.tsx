@@ -34,9 +34,6 @@ export default async function SharedSetlistPage({ params }: SharedSetlistPagePro
       <Card>
         <CardHeader>
           <CardTitle>Songs</CardTitle>
-          <CardDescription>
-            Custom keys, tempos, and notes apply only within this setlist view.
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {detail.songs.length === 0 ? (
@@ -45,43 +42,23 @@ export default async function SharedSetlistPage({ params }: SharedSetlistPagePro
             detail.songs.map((entry, index) => {
               const song = entry.song;
               const songTitle = song?.title ?? "Unavailable song";
-              const canonicalHref =
-                song
-                  ? `/songs/${song.id}?${new URLSearchParams({
-                      setlistId: detail.setlist.id,
-                      entryId: entry.id,
-                      shareToken: detail.setlist.share_token,
-                    }).toString()}`
-                  : null;
-              return (
-                <div key={entry.id} className="rounded-lg border border-border/60 bg-muted/20 p-4">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              const songHref = song ? `/s/${detail.setlist.share_token}/songs/${entry.id}` : null;
+              
+              return songHref ? (
+                <Link
+                  key={entry.id}
+                  href={songHref}
+                  className="block rounded-lg border border-border/60 bg-muted/20 p-4 transition-colors hover:bg-muted/30"
+                >
+                  <div className="flex flex-col gap-2">
                     <div className="space-y-1">
                       <p className="text-sm font-semibold text-foreground">
-                        {index + 1}. {" "}
-                        {song ? (
-                          <Link
-                            href={`/s/${detail.setlist.share_token}/songs/${entry.id}`}
-                            className="underline underline-offset-4"
-                          >
-                            {songTitle}
-                          </Link>
-                        ) : (
-                          songTitle
-                        )}
+                        {index + 1}. {songTitle}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {song?.artist ?? "Unknown artist"}
                       </p>
                     </div>
-                    {canonicalHref ? (
-                      <Link
-                        href={canonicalHref}
-                        className="text-xs font-medium text-primary underline underline-offset-4"
-                      >
-                        View song
-                      </Link>
-                    ) : null}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
                     <Badge variant="secondary">
@@ -102,6 +79,17 @@ export default async function SharedSetlistPage({ params }: SharedSetlistPagePro
                   {entry.notes ? (
                     <p className="mt-3 text-xs text-muted-foreground whitespace-pre-wrap">{entry.notes}</p>
                   ) : null}
+                </Link>
+              ) : (
+                <div key={entry.id} className="rounded-lg border border-border/60 bg-muted/20 p-4">
+                  <div className="flex flex-col gap-2">
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-foreground">
+                        {index + 1}. {songTitle}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Unknown artist</p>
+                    </div>
+                  </div>
                 </div>
               );
             })

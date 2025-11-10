@@ -41,6 +41,15 @@ export type Setlist = {
   updated_at: string;
 };
 
+export type CustomSectionData = {
+  type: 'custom';
+  label: string;
+  content?: string;
+  sectionIndex?: number;
+};
+
+export type ArrangementItem = number | CustomSectionData;
+
 export type SetlistSong = {
   id: string;
   setlist_id: string;
@@ -50,6 +59,7 @@ export type SetlistSong = {
   custom_tempo: number | null;
   custom_time_signature: string | null;
   notes: string | null;
+  arrangement: ArrangementItem[] | null;
   created_at: string;
 };
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
+import type { ArrangementItem } from "@/lib/types";
 
 type ActionResult<T = undefined> =
   | { success: true; data?: T }
@@ -94,6 +95,7 @@ export async function updateSetlistDetailsAction(input: {
 export async function addSetlistSongAction(input: {
   setlistId: string;
   songId: string;
+  arrangement?: ArrangementItem[] | null;
 }): Promise<ActionResult> {
   try {
     const { supabase } = await requireUser();
@@ -132,6 +134,7 @@ export async function addSetlistSongAction(input: {
       setlist_id: input.setlistId,
       song_id: input.songId,
       order_index: nextOrder,
+      arrangement: input.arrangement ?? null,
     });
 
     if (error) {
@@ -156,18 +159,32 @@ export async function updateSetlistSongAction(input: {
   customTempo?: number | null;
   customTimeSignature?: string | null;
   notes?: string | null;
+  arrangement?: ArrangementItem[] | null;
 }): Promise<ActionResult> {
   try {
     const { supabase } = await requireUser();
 
+    const updates: Record<string, unknown> = {};
+    
+    if (input.customKey !== undefined) {
+      updates.custom_key = input.customKey ?? null;
+    }
+    if (input.customTempo !== undefined) {
+      updates.custom_tempo = input.customTempo ?? null;
+    }
+    if (input.customTimeSignature !== undefined) {
+      updates.custom_time_signature = input.customTimeSignature ?? null;
+    }
+    if (input.notes !== undefined) {
+      updates.notes = input.notes ?? null;
+    }
+    if (input.arrangement !== undefined) {
+      updates.arrangement = input.arrangement ?? null;
+    }
+
     const { error } = await supabase
       .from("setlist_songs")
-      .update({
-        custom_key: input.customKey ?? null,
-        custom_tempo: input.customTempo ?? null,
-        custom_time_signature: input.customTimeSignature ?? null,
-        notes: input.notes ?? null,
-      })
+      .update(updates)
       .eq("id", input.id);
 
     if (error) {
@@ -335,6 +352,40 @@ export async function searchSongsAction(query: string): Promise<
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unable to search songs.",
+    };
+  }
+}
+
+export async function fetchSongSectionsAction(
+  songId: string,
+): Promise<
+  ActionResult<
+    Array<{
+      id: string;
+      type: string;
+      label: string;
+      order_index: number;
+    }>
+  >
+> {
+  try {
+    const { supabase } = await requireUser();
+
+    const { data, error } = await supabase
+      .from("song_sections")
+      .select("id, type, label, order_index")
+      .eq("song_id", songId)
+      .order("order_index", { ascending: true });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data: data ?? [] };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unable to fetch song sections.",
     };
   }
 }

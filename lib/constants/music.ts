@@ -25,6 +25,7 @@ export const SECTION_TYPES = [
   "outro",
   "instrumental",
   "tag",
+  "label",
 ] as const;
 
 export type SectionType = (typeof SECTION_TYPES)[number];

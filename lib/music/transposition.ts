@@ -5,15 +5,21 @@ export function calculateInitialTranspose(originalKey: string, targetKey: string
     return 0;
   }
 
-  const originalMidi = Note.midi(originalKey);
-  const targetMidi = Note.midi(targetKey);
+  // Use chroma() which returns 0-11 for pitch classes (C=0, C#=1, D=2, etc.)
+  // This works with key names without requiring octave information
+  const originalChroma = Note.chroma(originalKey);
+  const targetChroma = Note.chroma(targetKey);
 
-  if (originalMidi === null || targetMidi === null) {
+  if (originalChroma === undefined || targetChroma === undefined) {
     return 0;
   }
 
-  let difference = targetMidi - originalMidi;
+  // Calculate semitone difference
+  let difference = targetChroma - originalChroma;
+  
+  // Normalize to [-6, +6] range (prefer smaller transpositions)
   while (difference > 6) difference -= 12;
   while (difference < -6) difference += 12;
+  
   return difference;
 }
