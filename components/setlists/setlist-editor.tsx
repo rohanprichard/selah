@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import {
   addSetlistSongAction,
+  fetchSongSectionsAction,
   moveSetlistSongAction,
   removeSetlistSongAction,
   searchSongsAction,
@@ -13,7 +14,7 @@ import {
   updateSetlistSongAction,
 } from "@/app/setlists/actions";
 import { KEY_OPTIONS } from "@/lib/constants/music";
-import type { Song } from "@/lib/types";
+import type { Song, ArrangementItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +23,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowDown, ArrowUp, ExternalLink, Loader2, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, ExternalLink, Loader2, Trash2, ListOrdered } from "lucide-react";
+import { SongArrangerModal } from "@/components/setlists/song-arranger-modal";
 
 type SetlistEditorProps = {
   setlist: {
@@ -39,6 +41,7 @@ type SetlistEditorProps = {
     custom_tempo: number | null;
     custom_time_signature: string | null;
     notes: string | null;
+    arrangement: ArrangementItem[] | null;
     song: Song | null;
   }>;
 };
@@ -65,30 +68,71 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
   const [isAddingSongId, setIsAddingSongId] = React.useState<string | null>(null);
   const [isAddPending, startAddTransition] = React.useTransition();
   const searchTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Arranger modal state
+  const [arrangerOpen, setArrangerOpen] = React.useState(false);
+  const [arrangerSongId, setArrangerSongId] = React.useState<string | null>(null);
+  const [arrangerSections, setArrangerSections] = React.useState<
+    Array<{ id: string; type: string; label: string; order_index: number }>
+  >([]);
+  const [arrangerInitialArrangement, setArrangerInitialArrangement] = React.useState<
+    ArrangementItem[] | null
+  >(null);
+  const [isSavingArrangement, setIsSavingArrangement] = React.useState(false);
 
   React.useEffect(() => {
     setTitle(setlist.title);
     setDescription(setlist.description ?? "");
   }, [setlist.title, setlist.description]);
 
-  const handleSaveDetails = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    startSavingDetails(async () => {
-      const result = await updateSetlistDetailsAction({
-        id: setlist.id,
-        title,
-        description,
+  // Auto-save title
+  React.useEffect(() => {
+    if (title === setlist.title) return;
+    if (!title.trim()) return;
+
+    const timeout = setTimeout(() => {
+      startSavingDetails(async () => {
+        const result = await updateSetlistDetailsAction({
+          id: setlist.id,
+          title,
+          description,
+        });
+
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+
+        router.refresh();
       });
+    }, 1000);
 
-      if (!result.success) {
-        toast.error(result.error);
-        return;
-      }
+    return () => clearTimeout(timeout);
+  }, [title, setlist.id, setlist.title, description, router]);
 
-      toast.success("Setlist updated");
-      router.refresh();
-    });
-  };
+  // Auto-save description
+  React.useEffect(() => {
+    if (description === (setlist.description ?? "")) return;
+
+    const timeout = setTimeout(() => {
+      startSavingDetails(async () => {
+        const result = await updateSetlistDetailsAction({
+          id: setlist.id,
+          title,
+          description,
+        });
+
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+
+        router.refresh();
+      });
+    }, 1000);
+
+    return () => clearTimeout(timeout);
+  }, [description, setlist.id, setlist.description, title, router]);
 
   const handleSongSearch = React.useCallback(
     (term: string) => {
@@ -123,17 +167,48 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
     };
   }, [searchTerm, handleSongSearch]);
 
-  const handleAddSong = (songId: string) => {
+  const handleAddSong = async (songId: string) => {
     setIsAddingSongId(songId);
+    
+    // Fetch sections for the arranger
+    const sectionsResult = await fetchSongSectionsAction(songId);
+    if (!sectionsResult.success) {
+      toast.error(sectionsResult.error);
+      setIsAddingSongId(null);
+      return;
+    }
+    
+    // Open arranger modal
+    setArrangerSongId(songId);
+    setArrangerSections(sectionsResult.data ?? []);
+    setArrangerInitialArrangement(null);
+    setArrangerOpen(true);
+    setIsAddingSongId(null);
+  };
+  
+  const handleSaveArrangement = async (arrangement: ArrangementItem[] | null) => {
+    if (!arrangerSongId) return;
+    
+    setIsSavingArrangement(true);
     startAddTransition(async () => {
-      const result = await addSetlistSongAction({ setlistId: setlist.id, songId });
+      const result = await addSetlistSongAction({
+        setlistId: setlist.id,
+        songId: arrangerSongId,
+        arrangement,
+      });
+      
       if (!result.success) {
         toast.error(result.error);
-        setIsAddingSongId(null);
+        setIsSavingArrangement(false);
         return;
       }
+      
       toast.success("Song added to setlist");
-      setIsAddingSongId(null);
+      setArrangerOpen(false);
+      setArrangerSongId(null);
+      setArrangerSections([]);
+      setArrangerInitialArrangement(null);
+      setIsSavingArrangement(false);
       setSearchResults([]);
       setSearchTerm("");
       router.refresh();
@@ -150,9 +225,14 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSaveDetails}>
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2 space-y-2">
-              <Label htmlFor="setlist-title">Title</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="setlist-title">Title</Label>
+                {isSavingDetails && (
+                  <span className="text-xs text-muted-foreground">Saving...</span>
+                )}
+              </div>
               <Input
                 id="setlist-title"
                 value={title}
@@ -172,9 +252,6 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
               />
             </div>
             <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
-              <Button type="submit" disabled={isSavingDetails}>
-                {isSavingDetails ? "Saving..." : "Save details"}
-              </Button>
               <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-sm">
                 <span className="font-medium text-foreground">Share link</span>
                 <code className="rounded bg-background px-2 py-1 text-xs text-foreground">
@@ -195,7 +272,7 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
                 </Button>
               </div>
             </div>
-          </form>
+          </div>
         </CardContent>
       </Card>
 
@@ -280,6 +357,15 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
           </div>
         </CardContent>
       </Card>
+      
+      <SongArrangerModal
+        open={arrangerOpen}
+        onOpenChange={setArrangerOpen}
+        sections={arrangerSections}
+        initialArrangement={arrangerInitialArrangement}
+        onSave={handleSaveArrangement}
+        isLoading={isSavingArrangement}
+      />
     </div>
   );
 }
@@ -295,6 +381,7 @@ type SetlistSongRowProps = {
     custom_tempo: number | null;
     custom_time_signature: string | null;
     notes: string | null;
+    arrangement: ArrangementItem[] | null;
     song: Song | null;
   };
   onUpdate: () => void;
@@ -312,6 +399,13 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
   const [isUpdating, startUpdating] = React.useTransition();
   const [isMoving, startMoving] = React.useTransition();
   const [isRemoving, startRemoving] = React.useTransition();
+  
+  // Arranger modal state
+  const [arrangerOpen, setArrangerOpen] = React.useState(false);
+  const [arrangerSections, setArrangerSections] = React.useState<
+    Array<{ id: string; type: string; label: string; order_index: number }>
+  >([]);
+  const [isSavingArrangement, setIsSavingArrangement] = React.useState(false);
 
   React.useEffect(() => {
     setCustomKey(entry.custom_key ?? "");
@@ -320,8 +414,40 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
     setNotes(entry.notes ?? "");
   }, [entry.custom_key, entry.custom_tempo, entry.custom_time_signature, entry.notes]);
 
-  const handleSave = () => {
-    startUpdating(async () => {
+  // Auto-save custom key
+  React.useEffect(() => {
+    if (customKey === (entry.custom_key ?? "")) return;
+
+    const timeout = setTimeout(() => {
+      startUpdating(async () => {
+        const tempoValue = customTempo.trim() ? Number(customTempo) : null;
+        const result = await updateSetlistSongAction({
+          id: entry.id,
+          setlistId,
+          customKey: customKey || null,
+          customTempo: tempoValue,
+          customTimeSignature: customTimeSignature.trim() || null,
+          notes: notes.trim() || null,
+        });
+
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+
+        onUpdate();
+      });
+    }, 1000);
+
+    return () => clearTimeout(timeout);
+  }, [customKey, entry.custom_key, entry.id, setlistId, customTempo, customTimeSignature, notes, onUpdate]);
+
+  // Auto-save custom tempo
+  React.useEffect(() => {
+    const entryTempo = entry.custom_tempo !== null ? String(entry.custom_tempo) : "";
+    if (customTempo === entryTempo) return;
+
+    const timeout = setTimeout(() => {
       const tempoValue = customTempo.trim() ? Number(customTempo) : null;
       if (tempoValue !== null && Number.isNaN(tempoValue)) {
         toast.error("Tempo must be a number between 30 and 260.");
@@ -332,24 +458,83 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
         return;
       }
 
-      const result = await updateSetlistSongAction({
-        id: entry.id,
-        setlistId,
-        customKey: customKey || null,
-        customTempo: tempoValue,
-        customTimeSignature: customTimeSignature.trim() || null,
-        notes: notes.trim() || null,
+      startUpdating(async () => {
+        const result = await updateSetlistSongAction({
+          id: entry.id,
+          setlistId,
+          customKey: customKey || null,
+          customTempo: tempoValue,
+          customTimeSignature: customTimeSignature.trim() || null,
+          notes: notes.trim() || null,
+        });
+
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+
+        onUpdate();
       });
+    }, 1000);
 
-      if (!result.success) {
-        toast.error(result.error);
-        return;
-      }
+    return () => clearTimeout(timeout);
+  }, [customTempo, entry.custom_tempo, entry.id, setlistId, customKey, customTimeSignature, notes, onUpdate]);
 
-      toast.success("Song updated");
-      onUpdate();
-    });
-  };
+  // Auto-save custom time signature
+  React.useEffect(() => {
+    if (customTimeSignature === (entry.custom_time_signature ?? "")) return;
+
+    const timeout = setTimeout(() => {
+      startUpdating(async () => {
+        const tempoValue = customTempo.trim() ? Number(customTempo) : null;
+        const result = await updateSetlistSongAction({
+          id: entry.id,
+          setlistId,
+          customKey: customKey || null,
+          customTempo: tempoValue,
+          customTimeSignature: customTimeSignature.trim() || null,
+          notes: notes.trim() || null,
+        });
+
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+
+        onUpdate();
+      });
+    }, 1000);
+
+    return () => clearTimeout(timeout);
+  }, [customTimeSignature, entry.custom_time_signature, entry.id, setlistId, customKey, customTempo, notes, onUpdate]);
+
+  // Auto-save notes
+  React.useEffect(() => {
+    if (notes === (entry.notes ?? "")) return;
+
+    const timeout = setTimeout(() => {
+      startUpdating(async () => {
+        const tempoValue = customTempo.trim() ? Number(customTempo) : null;
+        const result = await updateSetlistSongAction({
+          id: entry.id,
+          setlistId,
+          customKey: customKey || null,
+          customTempo: tempoValue,
+          customTimeSignature: customTimeSignature.trim() || null,
+          notes: notes.trim() || null,
+        });
+
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+
+        onUpdate();
+      });
+    }, 1000);
+
+    return () => clearTimeout(timeout);
+  }, [notes, entry.notes, entry.id, setlistId, customKey, customTempo, customTimeSignature, onUpdate]);
 
   const handleMove = (direction: "up" | "down") => {
     startMoving(async () => {
@@ -378,6 +563,40 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
       toast.success("Removed from setlist");
       onUpdate();
     });
+  };
+  
+  const handleOpenArranger = async () => {
+    if (!entry.song?.id) return;
+    
+    const sectionsResult = await fetchSongSectionsAction(entry.song.id);
+    if (!sectionsResult.success) {
+      toast.error(sectionsResult.error);
+      return;
+    }
+    
+    setArrangerSections(sectionsResult.data ?? []);
+    setArrangerOpen(true);
+  };
+  
+  const handleSaveArrangement = async (arrangement: ArrangementItem[] | null) => {
+    setIsSavingArrangement(true);
+    
+    const result = await updateSetlistSongAction({
+      id: entry.id,
+      setlistId,
+      arrangement,
+    });
+    
+    if (!result.success) {
+      toast.error(result.error);
+      setIsSavingArrangement(false);
+      return;
+    }
+    
+    toast.success("Arrangement updated");
+    setArrangerOpen(false);
+    setIsSavingArrangement(false);
+    onUpdate();
   };
 
   const baseSong = entry.song;
@@ -430,18 +649,30 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
             <span className="sr-only">Move down</span>
           </Button>
           {baseSong ? (
-            <Button asChild variant="ghost" size="icon">
-              <Link href={`/setlists/${setlistId}/songs/${entry.id}`}>
-                <ExternalLink className="h-4 w-4" />
-                <span className="sr-only">View in setlist</span>
-              </Link>
-            </Button>
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleOpenArranger}
+                title="Arrange sections"
+              >
+                <ListOrdered className="h-4 w-4" />
+                <span className="sr-only">Arrange sections</span>
+              </Button>
+              <Button asChild variant="ghost" size="icon" title="View in setlist">
+                <Link href={`/setlists/${setlistId}/songs/${entry.id}`}>
+                  <Eye className="h-4 w-4" />
+                  <span className="sr-only">View in setlist</span>
+                </Link>
+              </Button>
+            </>
           ) : null}
           {canonicalUrl ? (
-            <Button asChild variant="ghost" size="icon">
+            <Button asChild variant="ghost" size="icon" title="View original song">
               <Link href={canonicalUrl}>
                 <ExternalLink className="h-4 w-4" />
-                <span className="sr-only">Open canonical song</span>
+                <span className="sr-only">View original song</span>
               </Link>
             </Button>
           ) : null}
@@ -460,7 +691,12 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Custom key</Label>
+          <div className="flex items-center gap-2">
+            <Label>Custom key</Label>
+            {isUpdating && (
+              <span className="text-xs text-muted-foreground">Saving...</span>
+            )}
+          </div>
           <Select
             value={customKey || "inherit"}
             onValueChange={(value) => {
@@ -509,12 +745,15 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
           />
         </div>
       </div>
-
-      <div className="mt-4">
-        <Button type="button" size="sm" onClick={handleSave} disabled={isUpdating}>
-          {isUpdating ? "Saving..." : "Save song settings"}
-        </Button>
-      </div>
+      
+      <SongArrangerModal
+        open={arrangerOpen}
+        onOpenChange={setArrangerOpen}
+        sections={arrangerSections}
+        initialArrangement={entry.arrangement}
+        onSave={handleSaveArrangement}
+        isLoading={isSavingArrangement}
+      />
     </div>
   );
 }

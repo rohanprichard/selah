@@ -54,6 +54,7 @@ export default async function SharedSetlistSongPage({
         overrideKey={entry.custom_key}
         overrideTempo={entry.custom_tempo}
         overrideTimeSignature={entry.custom_time_signature}
+        arrangement={entry.arrangement}
       />
     </div>
   );

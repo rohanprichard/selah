@@ -64,6 +64,7 @@ export async function fetchSetlistForEditing(id: string): Promise<SetlistDetail>
         custom_tempo,
         custom_time_signature,
         notes,
+        arrangement,
         created_at,
         song:songs (
           id,
@@ -95,6 +96,7 @@ export async function fetchSetlistForEditing(id: string): Promise<SetlistDetail>
         custom_tempo: entry.custom_tempo,
         custom_time_signature: entry.custom_time_signature,
         notes: entry.notes,
+        arrangement: entry.arrangement,
         created_at: entry.created_at,
         song: (normalizedSong ?? null) as Song | null,
       };
@@ -141,6 +143,7 @@ export async function fetchSetlistByShareToken(
         custom_tempo,
         custom_time_signature,
         notes,
+        arrangement,
         created_at,
         song:songs (
           id,
@@ -172,6 +175,7 @@ export async function fetchSetlistByShareToken(
         custom_tempo: entry.custom_tempo,
         custom_time_signature: entry.custom_time_signature,
         notes: entry.notes,
+        arrangement: entry.arrangement,
         created_at: entry.created_at,
         song: (normalizedSong ?? null) as Song | null,
       };
@@ -209,7 +213,7 @@ export async function fetchSetlistSongForOwner(
   const { data: entry, error: entryError } = await supabase
     .from("setlist_songs")
     .select(
-      `id, setlist_id, song_id, order_index, custom_key, custom_tempo, custom_time_signature, notes, created_at`
+      `id, setlist_id, song_id, order_index, custom_key, custom_tempo, custom_time_signature, notes, arrangement, created_at`
     )
     .eq("setlist_id", setlistId)
     .eq("id", entryId)
@@ -248,7 +252,7 @@ export async function fetchSetlistSongByToken(
   const { data: entry, error: entryError } = await supabase
     .from("setlist_songs")
     .select(
-      `id, setlist_id, song_id, order_index, custom_key, custom_tempo, custom_time_signature, notes, created_at`
+      `id, setlist_id, song_id, order_index, custom_key, custom_tempo, custom_time_signature, notes, arrangement, created_at`
     )
     .eq("setlist_id", setlist.id)
     .eq("id", entryId)

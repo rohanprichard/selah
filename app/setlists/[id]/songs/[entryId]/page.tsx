@@ -68,6 +68,7 @@ export default async function SetlistSongViewerPage({
         overrideKey={entry.custom_key}
         overrideTempo={entry.custom_tempo}
         overrideTimeSignature={entry.custom_time_signature}
+        arrangement={entry.arrangement}
       />
     </div>
   );
