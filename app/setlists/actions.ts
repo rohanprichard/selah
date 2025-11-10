@@ -390,3 +390,42 @@ export async function fetchSongSectionsAction(
   }
 }
 
+export async function deleteSetlistAction(input: {
+  id: string;
+}): Promise<ActionResult> {
+  try {
+    const { supabase, user } = await requireUser();
+
+    // Verify ownership
+    const { data: setlist, error: fetchError } = await supabase
+      .from("setlists")
+      .select("created_by")
+      .eq("id", input.id)
+      .single();
+
+    if (fetchError || !setlist) {
+      return { success: false, error: "Setlist not found." };
+    }
+
+    if (setlist.created_by !== user.id) {
+      return { success: false, error: "You don't have permission to delete this setlist." };
+    }
+
+    // Delete setlist (cascade will handle setlist_songs)
+    const { error: deleteError } = await supabase
+      .from("setlists")
+      .delete()
+      .eq("id", input.id);
+
+    if (deleteError) {
+      return { success: false, error: deleteError.message };
+    }
+
+    revalidatePath("/setlists");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting setlist:", error);
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
