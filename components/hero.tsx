@@ -89,16 +89,28 @@ export function Hero() {
 
                   <div className="rounded-lg border border-primary/10 bg-background/50 p-4 space-y-3 font-mono text-sm">
                     <div>
-                      <span className="text-primary font-bold">G</span>{'                         '}<span className="text-primary font-bold">D</span>
+                      <span className="text-primary font-bold">G</span>{'                '}<span className="text-primary font-bold">D</span>
                     </div>
                     <div className="text-foreground/80">
                       With a thousand hallelujahs
                     </div>
-                    <div className="mt-4">
-                      <span className="text-primary font-bold">A</span>{'                  '}<span className="text-primary font-bold">Bm</span>{'   '}<span className="text-primary font-bold">A</span>
+                    <div className="mt-2">
+                      <span className="text-primary font-bold">A</span>{'           '}<span className="text-primary font-bold">Bm</span>{'     '}<span className="text-primary font-bold">A</span>
                     </div>
                     <div className="text-foreground/80">
                       We magnify Your Name
+                    </div>
+                    <div className="mt-2">
+                      <span className="text-primary font-bold">G</span>{'                      '}<span className="text-primary font-bold">D</span>
+                    </div>
+                    <div className="text-foreground/80">
+                      You alone deserve the glory
+                    </div>
+                    <div className="mt-2">
+                      <span className="text-primary font-bold">A</span>{'          '}<span className="text-primary font-bold">Bm</span>{'        '}<span className="text-primary font-bold">A</span>
+                    </div>
+                    <div className="text-foreground/80">
+                      The honor and the praise
                     </div>
                   </div>
                 </div>
