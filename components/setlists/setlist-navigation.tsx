@@ -20,7 +20,6 @@ export function SetlistNavigation({
     nextHref,
     position,
     total,
-    setlistTitle,
 }: SetlistNavigationProps) {
     const router = useRouter();
 
