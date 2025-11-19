@@ -62,14 +62,16 @@ export function PianoVisualizer({ chordName, className }: PianoVisualizerProps) 
 
     // Determine which keys are active
     // We need to map the chord notes (pitch classes) to specific keys
-    // For simplicity, we'll light up ALL matching pitch classes in the range
+    // We use Note.chroma() to compare pitch classes, which handles enharmonics (D# == Eb)
     const activeKeys = new Set<string>();
 
+    // Get chromas for chord notes
+    const chordChromas = notes.map(n => Note.chroma(n));
+
     keys.forEach(key => {
-        // Check if key.note matches any of the chord notes
-        // Handle enharmonics simply by checking simplified versions
-        const simplifiedKey = Note.simplify(key.note);
-        if (notes.includes(simplifiedKey)) {
+        // Check if key.note matches any of the chord notes by chroma
+        const keyChroma = Note.chroma(key.note);
+        if (chordChromas.includes(keyChroma)) {
             activeKeys.add(key.fullName);
         }
     });
