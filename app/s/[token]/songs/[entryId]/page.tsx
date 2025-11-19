@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { SongViewer } from "@/components/song-viewer";
+import { SetlistNavigation } from "@/components/setlists/setlist-navigation";
 import { calculateInitialTranspose } from "@/lib/music/transposition";
 import { fetchSetlistSongByToken } from "@/lib/supabase/setlists";
 
@@ -20,8 +21,11 @@ export default async function SharedSetlistSongPage({
     notFound();
   }
 
-  const { setlist, entry, song, sections } = detail;
+  const { setlist, entry, song, sections, navigation } = detail;
   const initialTranspose = calculateInitialTranspose(song.key, entry.custom_key);
+
+  const prevHref = navigation.prevEntryId ? `/s/${token}/songs/${navigation.prevEntryId}` : undefined;
+  const nextHref = navigation.nextEntryId ? `/s/${token}/songs/${navigation.nextEntryId}` : undefined;
 
   return (
     <div className="space-y-6">
@@ -55,6 +59,14 @@ export default async function SharedSetlistSongPage({
         overrideTempo={entry.custom_tempo}
         overrideTimeSignature={entry.custom_time_signature}
         arrangement={entry.arrangement}
+      />
+
+      <SetlistNavigation
+        prevHref={prevHref}
+        nextHref={nextHref}
+        position={navigation.position}
+        total={navigation.total}
+        setlistTitle={setlist.title}
       />
     </div>
   );
