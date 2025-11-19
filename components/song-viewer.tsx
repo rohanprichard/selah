@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
-  buildChordDisplay,
   parseLyrics,
   transposeLines,
   type ParsedSection,
@@ -22,6 +21,7 @@ import { Copy, Edit3, Minus, Music, Plus, Printer, Share2, Wand2, Settings2, Typ
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { ChordTooltip } from "@/components/chords/chord-tooltip";
 
 const FONT_SIZES = {
   sm: "text-sm leading-6",
@@ -372,8 +372,7 @@ export function SongViewer({
                       </header>
                       <div className="space-y-1">
                         {section.lines.map((line, lineIndex) => {
-                          const chords = buildChordDisplay(line);
-                          const hasChords = chords.trim().length > 0;
+                          const hasChords = line.chords.length > 0;
                           const key = `${section.id}-${lineIndex}`;
 
                           if (!line.lyrics && !hasChords) {
@@ -383,8 +382,18 @@ export function SongViewer({
                           return (
                             <div key={key} className="relative group">
                               {hasChords && showChords && (
-                                <div className="chord-line text-primary/90 select-none print:text-black mb-0.5">
-                                  {chords}
+                                <div className="chord-line text-primary/90 select-none print:text-black mb-0.5 h-[1.5em] relative">
+                                  {line.chords.map((chordEntry, chordIndex) => (
+                                    <div
+                                      key={`${key}-chord-${chordIndex}`}
+                                      className="absolute top-0"
+                                      style={{ left: `${chordEntry.position}ch` }}
+                                    >
+                                      <ChordTooltip chord={chordEntry.chord}>
+                                        {chordEntry.chord}
+                                      </ChordTooltip>
+                                    </div>
+                                  ))}
                                 </div>
                               )}
                               <div className="lyric-line text-foreground">
