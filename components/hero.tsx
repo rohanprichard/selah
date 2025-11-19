@@ -89,16 +89,28 @@ export function Hero() {
 
                   <div className="rounded-lg border border-primary/10 bg-background/50 p-4 space-y-3 font-mono text-sm">
                     <div>
-                      <span className="text-primary font-bold">G</span>{'       '}<span className="text-primary font-bold">C</span>{'       '}<span className="text-primary font-bold">Em</span>{'    '}<span className="text-primary font-bold">D</span>
+                      <span className="text-primary font-bold">G</span>{'                '}<span className="text-primary font-bold">D</span>
                     </div>
                     <div className="text-foreground/80">
-                      Amazing grace how sweet the sound
+                      With a thousand hallelujahs
                     </div>
-                    <div className="mt-4">
-                      <span className="text-primary font-bold">G</span>{'       '}<span className="text-primary font-bold">C</span>{'       '}<span className="text-primary font-bold">D</span>{'     '}<span className="text-primary font-bold">G</span>
+                    <div className="mt-2">
+                      <span className="text-primary font-bold">A</span>{'           '}<span className="text-primary font-bold">Bm</span>{'     '}<span className="text-primary font-bold">A</span>
                     </div>
                     <div className="text-foreground/80">
-                      That saved a wretch like me
+                      We magnify Your Name
+                    </div>
+                    <div className="mt-2">
+                      <span className="text-primary font-bold">G</span>{'                      '}<span className="text-primary font-bold">D</span>
+                    </div>
+                    <div className="text-foreground/80">
+                      You alone deserve the glory
+                    </div>
+                    <div className="mt-2">
+                      <span className="text-primary font-bold">A</span>{'          '}<span className="text-primary font-bold">Bm</span>{'        '}<span className="text-primary font-bold">A</span>
+                    </div>
+                    <div className="text-foreground/80">
+                      The honor and the praise
                     </div>
                   </div>
                 </div>
@@ -109,7 +121,7 @@ export function Hero() {
             <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-              className="absolute -right-6 -top-6 rounded-xl bg-white p-3 shadow-xl dark:bg-zinc-900 border border-border/50"
+              className="absolute right-2 top-2 rounded-xl bg-white p-3 shadow-xl dark:bg-zinc-900 border border-border/50"
             >
               <Music2 className="h-6 w-6 text-accent" />
             </motion.div>
