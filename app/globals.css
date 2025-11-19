@@ -66,3 +66,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Chord display styling */
+.chord-line {
+  font-family: 'Monaco', 'Menlo', 'Courier New', 'Courier', monospace;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.5;
+  letter-spacing: 0.025em;
+}
+
+@media (max-width: 640px) {
+  .chord-line {
+    font-size: 0.8125rem; /* 13px */
+  }
+}
+
+@media print {
+  .chord-line {
+    font-size: 10pt;
+    color: black;
+  }
+}

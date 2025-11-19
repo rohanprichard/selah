@@ -34,29 +34,12 @@ export default async function SetlistSongViewerPage({
   const nextHref = navigation.nextEntryId ? `/setlists/${id}/songs/${navigation.nextEntryId}` : undefined;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            <Link href="/setlists" className="underline underline-offset-4">
-              My Setlists
-            </Link>
-            {" / "}
-            <Link href={`/setlists/${setlist.id}`} className="underline underline-offset-4">
-              {setlist.title}
-            </Link>
-          </p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
-            {song.title}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Showing setlist settings for this song
-          </p>
-        </div>
-        <Button asChild variant="secondary" className="gap-2">
-          <Link href={`/setlists/${setlist.id}`}>
-            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-            <span>Back to {setlist.title}</span>
+    <div className="space-y-6 pb-24">
+      <div className="flex items-center justify-between">
+        <Button asChild variant="ghost" size="sm">
+          <Link href={`/setlists/${id}`}>
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Back to setlist
           </Link>
         </Button>
       </div>

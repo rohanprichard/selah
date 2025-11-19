@@ -61,7 +61,7 @@ export function SetlistNavigation({
                 <Button
                     asChild
                     size="lg"
-                    className="fixed bottom-6 left-6 z-50 h-14 w-14 rounded-full bg-background/80 p-0 shadow-lg backdrop-blur-md transition-all hover:bg-background/90 hover:scale-105 print:hidden"
+                    className="fixed bottom-6 left-6 z-50 h-14 w-14 rounded-full bg-primary p-0 text-primary-foreground shadow-xl transition-all hover:bg-primary/90 hover:scale-110 hover:shadow-2xl print:hidden"
                     aria-label={`Previous song (${position - 1} of ${total})`}
                 >
                     <Link href={prevHref}>
@@ -75,7 +75,7 @@ export function SetlistNavigation({
                 <Button
                     asChild
                     size="lg"
-                    className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-background/80 p-0 shadow-lg backdrop-blur-md transition-all hover:bg-background/90 hover:scale-105 print:hidden"
+                    className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-primary p-0 text-primary-foreground shadow-xl transition-all hover:bg-primary/90 hover:scale-110 hover:shadow-2xl print:hidden"
                     aria-label={`Next song (${position + 1} of ${total})`}
                 >
                     <Link href={nextHref}>
