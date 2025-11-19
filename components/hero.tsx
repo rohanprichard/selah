@@ -87,7 +87,7 @@ export function Hero() {
                     <Badge variant="secondary">72 BPM</Badge>
                   </div>
 
-                  <div className="rounded-lg border border-primary/10 bg-background/50 p-4 space-y-3 font-mono text-sm">
+                  <div className="rounded-lg border border-primary/10 bg-background/50 p-4 space-y-3 font-mono text-sm whitespace-pre overflow-x-auto">
                     <div>
                       <span className="text-primary font-bold">G</span>{'                '}<span className="text-primary font-bold">D</span>
                     </div>
