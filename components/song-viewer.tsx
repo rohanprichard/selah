@@ -8,10 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { buildChordDisplay, parseLyrics, transposeLines, type ParsedSection } from "@/lib/chords";
+import {
+  buildChordDisplay,
+  parseLyrics,
+  transposeLines,
+  type ParsedSection,
+  formatSectionsAsLyrics,
+} from "@/lib/chords";
 import type { Song, SongSection, ArrangementItem } from "@/lib/types";
 
-import { Edit3, Minus, Music, Plus, Printer, Share2, Wand2 } from "lucide-react";
+import { Copy, Edit3, Minus, Music, Plus, Printer, Share2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
 const FONT_SIZES = {
@@ -125,6 +131,25 @@ export function SongViewer({
 
   const handleFontSize = (size: FontSize) => setFontSize(size);
 
+  const handleCopyLyrics = React.useCallback(async () => {
+    const formatted = formatSectionsAsLyrics(displayedSections);
+    if (!formatted) {
+      toast.error("No lyrics available to copy.");
+      return;
+    }
+    if (typeof navigator?.clipboard?.writeText !== "function") {
+      toast.error("Clipboard access is not available in this browser.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(formatted);
+      toast.success("Lyrics copied without chords");
+    } catch (error) {
+      console.error("Failed to copy lyrics", error);
+      toast.error("Unable to copy lyrics");
+    }
+  }, [displayedSections]);
+
   const handleShare = async () => {
     if (typeof navigator?.clipboard?.writeText !== "function") {
       toast.error("Clipboard access is not available in this browser.");
@@ -200,6 +225,15 @@ export function SongViewer({
               >
                 <Music className={cn("h-4 w-4", !showChords && "opacity-50")} />
                 <span className="sr-only">{showChords ? "Hide chords" : "Show chords"}</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleCopyLyrics}
+                title="Copy lyrics without chords"
+              >
+                <Copy className="h-4 w-4" />
+                <span className="sr-only">Copy lyrics without chords</span>
               </Button>
               <Button variant="outline" size="icon" onClick={handleShare} title="Copy link">
                 <Share2 className="h-4 w-4" />
