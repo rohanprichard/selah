@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 
@@ -28,6 +28,12 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
+  display: "swap",
+  subsets: ["latin"],
+});
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -38,7 +44,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.className} min-h-screen bg-background text-foreground antialiased`}
+        className={`${geistSans.className} ${jetbrainsMono.variable} min-h-screen bg-background text-foreground antialiased`}
       >
         <ThemeProvider
           attribute="class"

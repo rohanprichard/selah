@@ -387,7 +387,7 @@ export function SongViewer({
                                   {chords}
                                 </div>
                               )}
-                              <div className="whitespace-pre-wrap text-foreground font-medium leading-relaxed">
+                              <div className="lyric-line text-foreground">
                                 {line.lyrics || "\u00A0"}
                               </div>
                             </div>
