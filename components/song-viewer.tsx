@@ -40,6 +40,7 @@ type SongViewerProps = {
   overrideTempo?: number | null;
   overrideTimeSignature?: string | null;
   arrangement?: ArrangementItem[] | null;
+  hideHeader?: boolean;
 };
 
 export function SongViewer({
@@ -54,6 +55,7 @@ export function SongViewer({
   overrideTempo,
   overrideTimeSignature,
   arrangement,
+  hideHeader = false,
 }: SongViewerProps) {
   const [transposeSteps, setTransposeSteps] = React.useState(initialTranspose ?? 0);
   const [fontSize, setFontSize] = React.useState<FontSize>("md");
@@ -174,7 +176,7 @@ export function SongViewer({
   const displayedKey = React.useMemo(() => {
     return transposeLabel(song.key, transposeSteps);
   }, [song.key, transposeSteps]);
-  
+
   const keySecondaryParts: string[] = [];
   if (overrideKey && overrideKey !== song.key) {
     // When viewing from setlist with custom key, just show the original
@@ -198,71 +200,74 @@ export function SongViewer({
       : undefined;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 mb-24">
       <Card className="print:border-none print:shadow-none">
         <CardHeader className="gap-6">
-          <div className="flex flex-col gap-2 print:flex-row print:items-baseline print:justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-3xl font-semibold tracking-tight">{song.title}</CardTitle>
-              <CardDescription>
-                {song.artist ? `${song.artist}` : "Unknown artist"}
-                {song.writer ? ` • Written by ${song.writer}` : ""}
-                {ownerName ? ` • Uploaded by ${ownerName}` : ""}
-              </CardDescription>
+          {!hideHeader && (
+            <div className="flex flex-col gap-2 print:flex-row print:items-baseline print:justify-between">
+              <div className="space-y-1">
+                <CardTitle className="text-3xl font-semibold tracking-tight">{song.title}</CardTitle>
+                <CardDescription>
+                  {song.artist ? `${song.artist}` : "Unknown artist"}
+                  {song.writer ? ` • Written by ${song.writer}` : ""}
+                  {ownerName ? ` • Uploaded by ${ownerName}` : ""}
+                </CardDescription>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 print:hidden">
-              <TransposeControls
-                onDecrease={() => handleTranspose(-1)}
-                onIncrease={() => handleTranspose(1)}
-                value={transposeSteps}
-              />
-              <FontSizeControls value={fontSize} onChange={handleFontSize} />
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={() => setShowChords(prev => !prev)} 
-                title={showChords ? "Hide chords" : "Show chords"}
-              >
-                <Music className={cn("h-4 w-4", !showChords && "opacity-50")} />
-                <span className="sr-only">{showChords ? "Hide chords" : "Show chords"}</span>
+          )}
+
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 print:hidden">
+            <TransposeControls
+              onDecrease={() => handleTranspose(-1)}
+              onIncrease={() => handleTranspose(1)}
+              value={transposeSteps}
+            />
+            <FontSizeControls value={fontSize} onChange={handleFontSize} />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowChords(prev => !prev)}
+              title={showChords ? "Hide chords" : "Show chords"}
+            >
+              <Music className={cn("h-4 w-4", !showChords && "opacity-50")} />
+              <span className="sr-only">{showChords ? "Hide chords" : "Show chords"}</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCopyLyrics}
+              title="Copy lyrics without chords"
+            >
+              <Copy className="h-4 w-4" />
+              <span className="sr-only">Copy lyrics without chords</span>
+            </Button>
+            <Button variant="outline" size="icon" onClick={handleShare} title="Copy link">
+              <Share2 className="h-4 w-4" />
+              <span className="sr-only">Copy link</span>
+            </Button>
+            <Button variant="outline" size="icon" onClick={handlePrint} title="Print chart">
+              <Printer className="h-4 w-4" />
+              <span className="sr-only">Print</span>
+            </Button>
+            {canRemix ? (
+              <Button asChild variant="outline" size="icon" title="Remix song">
+                <Link href={`/songs/${song.id}/remix`}>
+                  <Wand2 className="h-4 w-4" />
+                  <span className="sr-only">Remix song</span>
+                </Link>
               </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleCopyLyrics}
-                title="Copy lyrics without chords"
-              >
-                <Copy className="h-4 w-4" />
-                <span className="sr-only">Copy lyrics without chords</span>
+            ) : null}
+            {isOwner ? (
+              <Button asChild variant="default" size="icon" title="Edit song">
+                <Link href={`/songs/${song.id}/edit`}>
+                  <Edit3 className="h-4 w-4" />
+                  <span className="sr-only">Edit song</span>
+                </Link>
               </Button>
-              <Button variant="outline" size="icon" onClick={handleShare} title="Copy link">
-                <Share2 className="h-4 w-4" />
-                <span className="sr-only">Copy link</span>
-              </Button>
-              <Button variant="outline" size="icon" onClick={handlePrint} title="Print chart">
-                <Printer className="h-4 w-4" />
-                <span className="sr-only">Print</span>
-              </Button>
-              {canRemix ? (
-                <Button asChild variant="outline" size="icon" title="Remix song">
-                  <Link href={`/songs/${song.id}/remix`}>
-                    <Wand2 className="h-4 w-4" />
-                    <span className="sr-only">Remix song</span>
-                  </Link>
-                </Button>
-              ) : null}
-              {isOwner ? (
-                <Button asChild variant="default" size="icon" title="Edit song">
-                  <Link href={`/songs/${song.id}/edit`}>
-                    <Edit3 className="h-4 w-4" />
-                    <span className="sr-only">Edit song</span>
-                  </Link>
-                </Button>
-              ) : null}
-            </div>
+            ) : null}
           </div>
 
-          <dl className="grid grid-cols-2 gap-3 text-sm text-muted-foreground print:hidden sm:grid-cols-3">
+          <dl className="grid grid-cols-2 gap-3 text-sm text-muted-foreground print:hidden sm:grid-cols-3 rounded-lg border border-border/50 bg-muted/20 p-4">
             <MetadataItem label="Key" value={displayedKey} secondary={keySecondary} />
             <MetadataItem label="Tempo" value={displayTempo ? `${displayTempo} BPM` : "—"} secondary={tempoSecondary} />
             <MetadataItem
@@ -289,7 +294,11 @@ export function SongViewer({
             </div>
           ) : null}
 
-          {song.youtube_url ? <YouTubeEmbed url={song.youtube_url} className="print:hidden" /> : null}
+          {song.youtube_url ? (
+            <div className="py-2">
+              <YouTubeEmbed url={song.youtube_url} className="print:hidden shadow-sm" />
+            </div>
+          ) : null}
           <article className={cn("space-y-6", FONT_SIZES[fontSize])}>
             {displayedSections.map((section, index) => (
               <section key={`${section.id}-${index}`} className="space-y-3">
@@ -329,7 +338,7 @@ export function SongViewer({
                         return (
                           <div key={key} className="leading-relaxed">
                             {hasChords && showChords ? (
-                              <pre className="whitespace-pre text-primary print:text-black">
+                              <pre className="chord-line whitespace-pre text-primary print:text-black">
                                 {chords}
                               </pre>
                             ) : null}

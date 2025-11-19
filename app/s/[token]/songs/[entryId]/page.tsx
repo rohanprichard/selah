@@ -28,21 +28,12 @@ export default async function SharedSetlistSongPage({
   const nextHref = navigation.nextEntryId ? `/s/${token}/songs/${navigation.nextEntryId}` : undefined;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            <Link href={`/s/${setlist.share_token}`} className="underline underline-offset-4">
-              Back to setlist
-            </Link>
-          </p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">{song.title}</h1>
-          <p className="text-sm text-muted-foreground">Setlist view shared via guest link</p>
-        </div>
-        <Button asChild variant="secondary" className="gap-2">
-          <Link href={`/s/${setlist.share_token}`}>
-            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-            <span>Back to {setlist.title}</span>
+    <div className="space-y-6 pb-24">
+      <div className="flex items-center justify-between">
+        <Button asChild variant="ghost" size="sm">
+          <Link href={`/s/${token}`}>
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Back to setlist
           </Link>
         </Button>
       </div>
