@@ -126,10 +126,11 @@ const FLAT_TO_SHARP: Record<string, string> = {
 };
 
 function normalizePitch(note: string): string {
-  const match = note.match(/^([A-G](?:#|b)?)(.*)$/);
+  const match = note.match(/^([A-G](?:#{1,2}|b{1,2})?)(.*)$/);
   if (!match) return note;
   const [, pitch, rest] = match;
-  const normalized = FLAT_TO_SHARP[pitch] ?? pitch;
+  const simplifiedPitch = Note.simplify(pitch) ?? pitch;
+  const normalized = FLAT_TO_SHARP[simplifiedPitch] ?? simplifiedPitch;
   return `${normalized}${rest}`;
 }
 
@@ -149,5 +150,51 @@ export function buildChordDisplay(line: ParsedLine): string {
   }
 
   return chars.join("").replace(/\s+$/g, "");
+}
+
+export function formatSectionsAsLyrics(sections: ParsedSection[]): string {
+  const formatted = sections
+    .map((section) => {
+      const label = formatSectionLabel(section);
+      const lyricsLines = section.lines
+        .map((line) => line.lyrics.trim())
+        .filter((line) => line.length > 0);
+
+      if (!label && lyricsLines.length === 0) {
+        return null;
+      }
+
+      const parts: string[] = [];
+      if (label) {
+        parts.push(`${label}:`);
+      }
+
+      if (lyricsLines.length > 0) {
+        if (label) {
+          parts.push("");
+        }
+        parts.push(lyricsLines.join("\n"));
+      }
+
+      return parts.join("\n");
+    })
+    .filter((section): section is string => Boolean(section && section.trim().length));
+
+  return formatted.join("\n\n").trim();
+}
+
+function formatSectionLabel(section: ParsedSection): string | null {
+  const explicit = section.label?.trim();
+  if (explicit) {
+    return explicit;
+  }
+  if (section.type) {
+    return toTitleCase(section.type);
+  }
+  return null;
+}
+
+function toTitleCase(value: string): string {
+  return value.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
