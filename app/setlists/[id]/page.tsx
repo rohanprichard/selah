@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
-import { SetlistEditor } from "@/components/setlists/setlist-editor";
+import { AuthSetlistContent } from "@/components/setlists/auth-setlist-content";
 import { createClient } from "@/lib/supabase/server";
 import { fetchSetlistForEditing } from "@/lib/supabase/setlists";
 
@@ -41,20 +41,5 @@ export default async function SetlistDetailPage({ params }: SetlistPageProps) {
 
   const shareUrl = `${baseUrl}/s/${detail.setlist.share_token}`;
 
-  return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12">
-      <SetlistEditor
-        setlist={{
-          id: detail.setlist.id,
-          title: detail.setlist.title,
-          description: detail.setlist.description,
-          shareToken: detail.setlist.share_token,
-          shareUrl,
-        }}
-        songs={detail.songs}
-      />
-    </div>
-  );
+  return <AuthSetlistContent detail={detail} shareUrl={shareUrl} />;
 }
-
-
