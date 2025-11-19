@@ -22,12 +22,12 @@ Selah helps worship teams pause, prepare, and worship with organized chord chart
    ```bash
    npm install
    ```
-3. **Configure environment variables** – copy `.env.example` to `.env.local` and fill in the values from Supabase:
+3. **Configure environment variables** – copy `.env.example` to `.env.local` and fill in the values from your Supabase project:
    ```env
-   NEXT_PUBLIC_SUPABASE_URL=https://aqsabhygtzunggyqkzbg.supabase.co
-   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxc2FiaHlndHp1bmdneXFremJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0OTI3MzIsImV4cCI6MjA3ODA2ODczMn0.zAVxS7Fe4lI2bkPzHP3I9KFffOJKs__nqZCD8QfeztY
+   NEXT_PUBLIC_SUPABASE_URL=your-project-url
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-anon-key
    ```
-   These values point to the ccm-saas Supabase project in the `ccm-saas` organization. If you rotate the keys, update this file accordingly.
+   Get these values from your Supabase project settings under *API*.
 4. **Run the development server**:
    ```bash
    npm run dev
@@ -36,8 +36,6 @@ Selah helps worship teams pause, prepare, and worship with organized chord chart
 
 ## Supabase Configuration
 
-- **Project reference**: `aqsabhygtzunggyqkzbg`
-- **Region**: `us-east-1`
 - **Auth settings**:
   - Enable email/password sign-in (default).
   - Turn on the Google provider and supply the client ID/secret from the Google Cloud Console.
