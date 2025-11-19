@@ -77,7 +77,7 @@ export async function fetchSetlistForEditing(id: string): Promise<SetlistDetail>
       `,
     )
     .eq("setlist_id", id)
-    .order("order_index", { ascending: true});
+    .order("order_index", { ascending: true });
 
   if (songsError) {
     throw new Error(songsError.message);
@@ -187,12 +187,59 @@ export async function fetchSetlistByShareToken(
   };
 }
 
+export type SetlistNavigationContext = {
+  prevEntryId: string | null;
+  nextEntryId: string | null;
+  position: number;
+  total: number;
+};
+
 export type SetlistSongDetail = {
   setlist: Setlist;
   entry: SetlistSong;
   song: Song;
   sections: SongSection[];
+  navigation: SetlistNavigationContext;
 };
+
+async function fetchSetlistNavigationContext(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  setlistId: string,
+  currentEntryId: string
+): Promise<SetlistNavigationContext> {
+  const { data: allEntries, error } = await supabase
+    .from("setlist_songs")
+    .select("id, order_index")
+    .eq("setlist_id", setlistId)
+    .order("order_index", { ascending: true });
+
+  if (error || !allEntries || allEntries.length === 0) {
+    return {
+      prevEntryId: null,
+      nextEntryId: null,
+      position: 1,
+      total: 1,
+    };
+  }
+
+  const currentIndex = allEntries.findIndex((e) => e.id === currentEntryId);
+
+  if (currentIndex === -1) {
+    return {
+      prevEntryId: null,
+      nextEntryId: null,
+      position: 1,
+      total: allEntries.length,
+    };
+  }
+
+  return {
+    prevEntryId: currentIndex > 0 ? allEntries[currentIndex - 1].id : null,
+    nextEntryId: currentIndex < allEntries.length - 1 ? allEntries[currentIndex + 1].id : null,
+    position: currentIndex + 1,
+    total: allEntries.length,
+  };
+}
 
 export async function fetchSetlistSongForOwner(
   setlistId: string,
@@ -224,12 +271,14 @@ export async function fetchSetlistSongForOwner(
   }
 
   const songDetail = await fetchSongById(entry.song_id);
+  const navigation = await fetchSetlistNavigationContext(supabase, setlistId, entryId);
 
   return {
     setlist: setlist as Setlist,
     entry: entry as SetlistSong,
     song: songDetail.song,
     sections: songDetail.sections,
+    navigation,
   };
 }
 
@@ -266,12 +315,14 @@ export async function fetchSetlistSongByToken(
     const songDetail = await fetchSongById(entry.song_id, {
       headers: { "x-share-token": token },
     });
+    const navigation = await fetchSetlistNavigationContext(supabase, setlist.id, entryId);
 
     return {
       setlist: setlist as Setlist,
       entry: entry as SetlistSong,
       song: songDetail.song,
       sections: songDetail.sections,
+      navigation,
     };
   } catch (error) {
     console.error("Failed to load song via share token", error);
