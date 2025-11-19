@@ -4,57 +4,74 @@
 
 @layer base {
   :root {
-    --background: 35 42% 94%;
-    --foreground: 151 49% 14%;
+    /* HSL Color Palette - Premium & Natural */
+    --background: 35 30% 98%;
+    /* Warmer, cleaner white */
+    --foreground: 151 49% 10%;
+    /* Deep forest green, almost black */
+
     --card: 0 0% 100%;
-    --card-foreground: 151 49% 14%;
+    --card-foreground: 151 49% 10%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 151 49% 14%;
-    --primary: 151 49% 14%;
-    --primary-foreground: 35 42% 94%;
-    --secondary: 41 70% 58%;
-    --secondary-foreground: 28 45% 20%;
-    --muted: 35 32% 90%;
-    --muted-foreground: 151 32% 36%;
-    --accent: 144 28% 72%;
-    --accent-foreground: 156 28% 24%;
-    --destructive: 0 72% 51%;
+    --popover-foreground: 151 49% 10%;
+
+    --primary: 151 55% 20%;
+    /* Richer forest green */
+    --primary-foreground: 35 42% 96%;
+
+    --secondary: 35 20% 92%;
+    /* Warm beige/grey for secondary actions */
+    --secondary-foreground: 151 49% 15%;
+
+    --muted: 35 20% 94%;
+    --muted-foreground: 151 20% 40%;
+
+    --accent: 38 92% 50%;
+    /* Golden amber for "Wow" moments */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 35 28% 82%;
-    --input: 35 28% 82%;
-    --ring: 151 49% 18%;
-    --chart-1: 231 61% 32%;
-    --chart-2: 41 86% 58%;
-    --chart-3: 144 35% 55%;
-    --chart-4: 12 74% 62%;
-    --chart-5: 278 55% 60%;
-    --radius: 0.5rem;
+
+    --border: 35 15% 85%;
+    --input: 35 15% 85%;
+    --ring: 151 55% 20%;
+
+    --radius: 0.75rem;
+    /* Softer corners */
   }
+
   .dark {
-    --background: 231 64% 8%;
-    --foreground: 210 40% 96%;
-    --card: 231 60% 10%;
-    --card-foreground: 210 40% 96%;
-    --popover: 231 60% 10%;
-    --popover-foreground: 210 40% 96%;
-    --primary: 231 61% 70%;
-    --primary-foreground: 229 47% 16%;
-    --secondary: 231 46% 18%;
-    --secondary-foreground: 210 40% 94%;
-    --muted: 231 46% 18%;
-    --muted-foreground: 219 32% 72%;
-    --accent: 144 32% 40%;
-    --accent-foreground: 156 36% 88%;
-    --destructive: 0 62% 42%;
+    --background: 151 45% 5%;
+    /* Very deep green/black */
+    --foreground: 35 20% 90%;
+
+    --card: 151 45% 7%;
+    --card-foreground: 35 20% 90%;
+
+    --popover: 151 45% 7%;
+    --popover-foreground: 35 20% 90%;
+
+    --primary: 151 40% 50%;
+    /* Muted forest green for dark mode */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 151 30% 12%;
+    --secondary-foreground: 35 20% 90%;
+
+    --muted: 151 30% 12%;
+    --muted-foreground: 151 10% 60%;
+
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 98%;
-    --border: 231 36% 22%;
-    --input: 231 36% 22%;
-    --ring: 41 86% 58%;
-    --chart-1: 231 61% 70%;
-    --chart-2: 41 86% 58%;
-    --chart-3: 144 35% 55%;
-    --chart-4: 12 74% 62%;
-    --chart-5: 278 55% 60%;
+
+    --border: 151 30% 15%;
+    --input: 151 30% 15%;
+    --ring: 151 40% 50%;
   }
 }
 
@@ -62,22 +79,40 @@
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground selection:bg-accent/20 selection:text-accent-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-background/70 backdrop-blur-lg border border-white/20 shadow-sm;
+  }
+
+  .glass-dark {
+    @apply dark:bg-black/40 dark:border-white/10;
+  }
+
+  .text-balance {
+    text-wrap: balance;
   }
 }
 
 /* Chord display styling */
 .chord-line {
-  font-family: 'Monaco', 'Menlo', 'Courier New', 'Courier', monospace;
-  font-size: 0.875rem; /* 14px */
-  line-height: 1.5;
-  letter-spacing: 0.025em;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
+  /* More modern mono stack */
+  font-size: 0.9rem;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  font-weight: 600;
 }
 
 @media (max-width: 640px) {
   .chord-line {
-    font-size: 0.8125rem; /* 13px */
+    font-size: 0.85rem;
   }
 }
 

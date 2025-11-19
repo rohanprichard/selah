@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,13 +18,16 @@ import {
 } from "@/lib/chords";
 import type { Song, SongSection, ArrangementItem } from "@/lib/types";
 
-import { Copy, Edit3, Minus, Music, Plus, Printer, Share2, Wand2 } from "lucide-react";
+import { Copy, Edit3, Minus, Music, Plus, Printer, Share2, Wand2, Settings2, Type } from "lucide-react";
 import { toast } from "sonner";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 
 const FONT_SIZES = {
   sm: "text-sm leading-6",
   md: "text-base leading-7",
   lg: "text-lg leading-8",
+  xl: "text-xl leading-9",
 } as const;
 
 type FontSize = keyof typeof FONT_SIZES;
@@ -127,7 +131,7 @@ export function SongViewer({
   const handleTranspose = (amount: number) => {
     setTransposeSteps((prev) => {
       const next = prev + amount;
-      return Math.max(-6, Math.min(6, next));
+      return Math.max(-12, Math.min(12, next));
     });
   };
 
@@ -179,10 +183,8 @@ export function SongViewer({
 
   const keySecondaryParts: string[] = [];
   if (overrideKey && overrideKey !== song.key) {
-    // When viewing from setlist with custom key, just show the original
     keySecondaryParts.push(`Original: ${song.key}`);
   } else if (song.key !== displayedKey) {
-    // When manually transposing, show where it came from
     keySecondaryParts.push(`Transposed from ${song.key}`);
   }
   const keySecondary = keySecondaryParts.length ? keySecondaryParts.join(" · ") : undefined;
@@ -200,162 +202,216 @@ export function SongViewer({
       : undefined;
 
   return (
-    <div className="space-y-6 mb-24">
-      <Card className="print:border-none print:shadow-none">
-        <CardHeader className="gap-6">
-          {!hideHeader && (
-            <div className="flex flex-col gap-2 print:flex-row print:items-baseline print:justify-between">
-              <div className="space-y-1">
-                <CardTitle className="text-3xl font-semibold tracking-tight">{song.title}</CardTitle>
-                <CardDescription>
-                  {song.artist ? `${song.artist}` : "Unknown artist"}
-                  {song.writer ? ` • Written by ${song.writer}` : ""}
-                  {ownerName ? ` • Uploaded by ${ownerName}` : ""}
-                </CardDescription>
-              </div>
+    <div className="space-y-8 mb-32">
+      {/* Header Section */}
+      {!hideHeader && (
+        <div className="space-y-4">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{song.title}</h1>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
+              <span className="font-medium text-foreground">{song.artist || "Unknown artist"}</span>
+              {song.writer && (
+                <>
+                  <span>•</span>
+                  <span>{song.writer}</span>
+                </>
+              )}
             </div>
-          )}
+          </div>
 
-          <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 print:hidden">
+          <div className="flex flex-wrap gap-3">
+            <MetadataBadge label="Key" value={displayedKey} secondary={keySecondary} />
+            <MetadataBadge label="Tempo" value={displayTempo ? `${displayTempo} BPM` : "—"} secondary={tempoSecondary} />
+            <MetadataBadge label="Time" value={displayTimeSignature ?? "—"} secondary={timeSignatureSecondary} />
+            {Array.isArray(song.tags) && song.tags.map(tag => (
+              <Badge key={tag} variant="outline" className="h-auto py-1.5 px-3 text-sm font-normal bg-background/50">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sticky Toolbar */}
+      <div className="sticky top-20 z-40 -mx-4 px-4 sm:mx-0 sm:px-0 print:hidden">
+        <div className="glass rounded-xl p-2 flex items-center justify-between gap-2 shadow-lg">
+          <div className="flex items-center gap-2">
             <TransposeControls
               onDecrease={() => handleTranspose(-1)}
               onIncrease={() => handleTranspose(1)}
               value={transposeSteps}
             />
-            <FontSizeControls value={fontSize} onChange={handleFontSize} />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setShowChords(prev => !prev)}
-              title={showChords ? "Hide chords" : "Show chords"}
-            >
-              <Music className={cn("h-4 w-4", !showChords && "opacity-50")} />
-              <span className="sr-only">{showChords ? "Hide chords" : "Show chords"}</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleCopyLyrics}
-              title="Copy lyrics without chords"
-            >
-              <Copy className="h-4 w-4" />
-              <span className="sr-only">Copy lyrics without chords</span>
-            </Button>
-            <Button variant="outline" size="icon" onClick={handleShare} title="Copy link">
-              <Share2 className="h-4 w-4" />
-              <span className="sr-only">Copy link</span>
-            </Button>
-            <Button variant="outline" size="icon" onClick={handlePrint} title="Print chart">
-              <Printer className="h-4 w-4" />
-              <span className="sr-only">Print</span>
-            </Button>
-            {canRemix ? (
-              <Button asChild variant="outline" size="icon" title="Remix song">
-                <Link href={`/songs/${song.id}/remix`}>
-                  <Wand2 className="h-4 w-4" />
-                  <span className="sr-only">Remix song</span>
-                </Link>
+            <Separator orientation="vertical" className="h-6 hidden sm:block" />
+            <div className="hidden sm:flex items-center gap-1">
+              <Button
+                variant={showChords ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setShowChords(!showChords)}
+                className="h-8 px-3"
+              >
+                <Music className="mr-2 h-4 w-4" />
+                {showChords ? "Chords On" : "Chords Off"}
               </Button>
-            ) : null}
-            {isOwner ? (
-              <Button asChild variant="default" size="icon" title="Edit song">
-                <Link href={`/songs/${song.id}/edit`}>
-                  <Edit3 className="h-4 w-4" />
-                  <span className="sr-only">Edit song</span>
-                </Link>
-              </Button>
-            ) : null}
+              <FontSizeMenu value={fontSize} onChange={handleFontSize} />
+            </div>
           </div>
 
-          <dl className="grid grid-cols-2 gap-3 text-sm text-muted-foreground print:hidden sm:grid-cols-3 rounded-lg border border-border/50 bg-muted/20 p-4">
-            <MetadataItem label="Key" value={displayedKey} secondary={keySecondary} />
-            <MetadataItem label="Tempo" value={displayTempo ? `${displayTempo} BPM` : "—"} secondary={tempoSecondary} />
-            <MetadataItem
-              label="Time Signature"
-              value={displayTimeSignature ?? "—"}
-              secondary={timeSignatureSecondary}
-            />
-          </dl>
-          {Array.isArray(song.tags) && song.tags.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-2 print:hidden">
-              {song.tags.map((tag) => (
-                <Badge key={tag} variant="outline">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          ) : null}
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {notes ? (
-            <div className="rounded-lg border border-dashed border-foreground/10 bg-muted/30 p-4 text-sm text-muted-foreground">
-              <p className="text-xs font-semibold uppercase tracking-wide text-foreground">Setlist notes</p>
-              <p className="mt-2 whitespace-pre-wrap">{notes}</p>
-            </div>
-          ) : null}
-
-          {song.youtube_url ? (
-            <div className="py-2">
-              <YouTubeEmbed url={song.youtube_url} className="print:hidden shadow-sm" />
-            </div>
-          ) : null}
-          <article className={cn("space-y-6", FONT_SIZES[fontSize])}>
-            {displayedSections.map((section, index) => (
-              <section key={`${section.id}-${index}`} className="space-y-3">
-                {section.type === 'label' || section.type === 'custom' ? (
-                  <div className="rounded-md border border-dashed border-muted bg-muted/30 p-4">
-                    <p className="text-sm font-semibold uppercase tracking-wide text-foreground">
-                      {section.label}
-                    </p>
-                    {section.lines.length > 0 && (
-                      <div className="mt-3 space-y-2 text-sm text-muted-foreground">
-                        {section.lines.map((line, lineIndex) => (
-                          <pre key={lineIndex} className="whitespace-pre-wrap">
-                            {line.lyrics || "\u00A0"}
-                          </pre>
+          <div className="flex items-center gap-1">
+            {/* Mobile Menu for extra controls */}
+            <div className="sm:hidden">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Settings2 className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-2">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between px-2 py-1">
+                      <span className="text-sm font-medium">Chords</span>
+                      <Button
+                        variant={showChords ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setShowChords(!showChords)}
+                        className="h-7 text-xs"
+                      >
+                        {showChords ? "On" : "Off"}
+                      </Button>
+                    </div>
+                    <Separator />
+                    <div className="px-2 py-1">
+                      <span className="text-sm font-medium mb-2 block">Font Size</span>
+                      <div className="flex gap-1">
+                        {(["sm", "md", "lg", "xl"] as FontSize[]).map((size) => (
+                          <Button
+                            key={size}
+                            variant={fontSize === size ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handleFontSize(size)}
+                            className="h-7 flex-1 text-xs"
+                          >
+                            {size.toUpperCase()}
+                          </Button>
                         ))}
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <header className="flex items-baseline gap-3">
-                      <Badge variant="secondary" className="uppercase">
-                        {section.type}
-                      </Badge>
-                      <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                        {section.label}
-                      </h2>
-                    </header>
-                    <div className="space-y-2">
-                      {section.lines.map((line, lineIndex) => {
-                        const chords = buildChordDisplay(line);
-                        const hasChords = chords.trim().length > 0;
-                        const key = `${section.id}-${lineIndex}`;
-                        if (!line.lyrics && !hasChords) {
-                          return <div key={key} className="h-4" />;
-                        }
-                        return (
-                          <div key={key} className="leading-relaxed">
-                            {hasChords && showChords ? (
-                              <pre className="chord-line whitespace-pre text-primary print:text-black">
-                                {chords}
-                              </pre>
-                            ) : null}
-                            <pre className="whitespace-pre-wrap text-foreground">
-                              {line.lyrics || "\u00A0"}
-                            </pre>
-                          </div>
-                        );
-                      })}
                     </div>
-                  </>
-                )}
-              </section>
-            ))}
-          </article>
-        </CardContent>
-      </Card>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <Separator orientation="vertical" className="h-6 hidden sm:block" />
+
+            <Button variant="ghost" size="icon" onClick={handleCopyLyrics} title="Copy lyrics" className="h-8 w-8">
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleShare} title="Share" className="h-8 w-8">
+              <Share2 className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handlePrint} title="Print" className="h-8 w-8">
+              <Printer className="h-4 w-4" />
+            </Button>
+
+            {canRemix && (
+              <Button asChild variant="ghost" size="icon" title="Remix" className="h-8 w-8">
+                <Link href={`/songs/${song.id}/remix`}>
+                  <Wand2 className="h-4 w-4" />
+                </Link>
+              </Button>
+            )}
+
+            {isOwner && (
+              <Button asChild variant="default" size="sm" className="h-8 px-3 ml-1">
+                <Link href={`/songs/${song.id}/edit`}>
+                  <Edit3 className="mr-2 h-3 w-3" /> Edit
+                </Link>
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="grid gap-8 lg:grid-cols-[1fr,300px]">
+        <Card className="border-none shadow-none bg-transparent">
+          <CardContent className="p-0 space-y-8">
+            {notes && (
+              <div className="rounded-lg border border-dashed border-primary/20 bg-primary/5 p-4 text-sm">
+                <p className="text-xs font-bold uppercase tracking-wide text-primary mb-1">Setlist Notes</p>
+                <p className="text-muted-foreground whitespace-pre-wrap">{notes}</p>
+              </div>
+            )}
+
+            <article className={cn("space-y-8", FONT_SIZES[fontSize])}>
+              {displayedSections.map((section, index) => (
+                <section key={`${section.id}-${index}`} className="space-y-2 break-inside-avoid">
+                  {section.type === 'label' || section.type === 'custom' ? (
+                    <div className="rounded-lg border border-muted bg-muted/30 p-4">
+                      <p className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                        {section.label}
+                      </p>
+                      {section.lines.length > 0 && (
+                        <div className="mt-2 space-y-1 text-muted-foreground">
+                          {section.lines.map((line, lineIndex) => (
+                            <div key={lineIndex} className="whitespace-pre-wrap">
+                              {line.lyrics || "\u00A0"}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <header className="flex items-center gap-3 mb-2">
+                        <Badge variant="secondary" className="uppercase tracking-wider font-bold text-[10px] px-2 bg-muted text-muted-foreground border-transparent">
+                          {section.type}
+                        </Badge>
+                        <span className="text-sm font-medium text-muted-foreground/50 uppercase tracking-widest">
+                          {section.label}
+                        </span>
+                      </header>
+                      <div className="space-y-1">
+                        {section.lines.map((line, lineIndex) => {
+                          const chords = buildChordDisplay(line);
+                          const hasChords = chords.trim().length > 0;
+                          const key = `${section.id}-${lineIndex}`;
+
+                          if (!line.lyrics && !hasChords) {
+                            return <div key={key} className="h-4" />;
+                          }
+
+                          return (
+                            <div key={key} className="relative group">
+                              {hasChords && showChords && (
+                                <div className="chord-line text-primary/90 select-none print:text-black mb-0.5">
+                                  {chords}
+                                </div>
+                              )}
+                              <div className="whitespace-pre-wrap text-foreground font-medium leading-relaxed">
+                                {line.lyrics || "\u00A0"}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </section>
+              ))}
+            </article>
+          </CardContent>
+        </Card>
+
+        {/* Sidebar (Desktop) */}
+        <div className="hidden lg:block space-y-6">
+          {song.youtube_url && (
+            <div className="sticky top-40 space-y-4">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Reference</h3>
+              <YouTubeEmbed url={song.youtube_url} />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -367,20 +423,14 @@ function transposeLabel(original: string, steps: number): string {
   return chord || original;
 }
 
-function MetadataItem({
-  label,
-  value,
-  secondary,
-}: {
-  label: string;
-  value: string | number;
-  secondary?: string;
-}) {
+function MetadataBadge({ label, value, secondary }: { label: string; value: string; secondary?: string }) {
   return (
-    <div>
-      <p className="text-xs uppercase text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium text-foreground">{value}</p>
-      {secondary ? <p className="text-xs text-muted-foreground">{secondary}</p> : null}
+    <div className="inline-flex flex-col rounded-md border border-border bg-muted/30 px-3 py-1.5">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
+      <div className="flex items-baseline gap-2">
+        <span className="text-sm font-semibold text-foreground">{value}</span>
+        {secondary && <span className="text-[10px] text-muted-foreground truncate max-w-[100px]" title={secondary}>{secondary}</span>}
+      </div>
     </div>
   );
 }
@@ -393,49 +443,45 @@ type TransposeControlsProps = {
 
 function TransposeControls({ value, onIncrease, onDecrease }: TransposeControlsProps) {
   return (
-    <div className="flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1 text-sm">
-      <span className="text-muted-foreground">Transpose</span>
-      <div className="flex items-center gap-1">
-        <Button type="button" size="icon" variant="ghost" onClick={onDecrease}>
-          <Minus className="h-4 w-4" />
-          <span className="sr-only">Transpose down</span>
-        </Button>
-        <span className="w-8 text-center font-semibold text-foreground">{value >= 0 ? `+${value}` : value}</span>
-        <Button type="button" size="icon" variant="ghost" onClick={onIncrease}>
-          <Plus className="h-4 w-4" />
-          <span className="sr-only">Transpose up</span>
-        </Button>
-      </div>
+    <div className="flex items-center rounded-lg bg-background border border-border p-0.5">
+      <Button type="button" size="icon" variant="ghost" onClick={onDecrease} className="h-7 w-7 rounded-md hover:bg-muted">
+        <Minus className="h-3 w-3" />
+        <span className="sr-only">Transpose down</span>
+      </Button>
+      <span className="w-8 text-center text-sm font-bold tabular-nums">{value > 0 ? `+${value}` : value}</span>
+      <Button type="button" size="icon" variant="ghost" onClick={onIncrease} className="h-7 w-7 rounded-md hover:bg-muted">
+        <Plus className="h-3 w-3" />
+        <span className="sr-only">Transpose up</span>
+      </Button>
     </div>
   );
 }
 
-type FontSizeControlsProps = {
-  value: FontSize;
-  onChange: (value: FontSize) => void;
-};
-
-function FontSizeControls({ value, onChange }: FontSizeControlsProps) {
+function FontSizeMenu({ value, onChange }: { value: FontSize; onChange: (v: FontSize) => void }) {
   return (
-    <div className="flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-sm">
-      <span className="text-muted-foreground">Font</span>
-      <div className="flex items-center gap-1">
-        {(
-          ["sm", "md", "lg"] as FontSize[]
-        ).map((size) => (
-          <Button
-            key={size}
-            type="button"
-            size="icon"
-            variant={value === size ? "default" : "ghost"}
-            onClick={() => onChange(size)}
-            className="h-8 w-8"
-          >
-            <span className="text-xs uppercase">{size}</span>
-          </Button>
-        ))}
-      </div>
-    </div>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-8 px-3">
+          <Type className="mr-2 h-4 w-4" />
+          <span className="uppercase">{value}</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-48 p-2">
+        <div className="grid grid-cols-4 gap-1">
+          {(["sm", "md", "lg", "xl"] as FontSize[]).map((size) => (
+            <Button
+              key={size}
+              variant={value === size ? "default" : "ghost"}
+              size="sm"
+              onClick={() => onChange(size)}
+              className="h-8 w-full text-xs font-bold"
+            >
+              {size.toUpperCase()}
+            </Button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -459,7 +505,7 @@ function YouTubeEmbed({ url, className }: { url: string; className?: string }) {
   if (!embedUrl) return null;
 
   return (
-    <div className={cn("aspect-video w-full overflow-hidden rounded-lg border border-border bg-black", className)}>
+    <div className={cn("aspect-video w-full overflow-hidden rounded-xl border border-border bg-black shadow-lg", className)}>
       <iframe
         title="YouTube video player"
         src={`${embedUrl}?rel=0`}

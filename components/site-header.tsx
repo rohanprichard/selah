@@ -11,7 +11,7 @@ const navLinks = [
 
 export async function SiteHeader() {
   return (
-    <header className="border-b border-border bg-background/80 backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-6">
           <Link href="/" className="text-lg font-semibold tracking-tight">

@@ -21,10 +21,10 @@ export const SongCard = React.memo(function SongCard({ song }: SongCardProps) {
   }, [song.created_at]);
 
   return (
-    <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
+    <Card className="group h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/50 border-transparent bg-white/50 dark:bg-white/5">
       <Link href={`/songs/${song.id}`} className="flex h-full flex-col">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold leading-tight">
+          <CardTitle className="text-xl font-semibold leading-tight group-hover:text-primary transition-colors">
             {song.title}
           </CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
@@ -34,36 +34,36 @@ export const SongCard = React.memo(function SongCard({ song }: SongCardProps) {
         <CardContent className="mt-auto flex flex-col gap-4 text-sm">
           <dl className="grid grid-cols-2 gap-3 text-muted-foreground">
             <div className="flex flex-col gap-1">
-              <dt className="text-xs uppercase tracking-wide">Key</dt>
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground/70">Key</dt>
               <dd className="font-medium text-foreground">{song.key}</dd>
             </div>
             <div className="flex flex-col gap-1">
-              <dt className="text-xs uppercase tracking-wide">Time</dt>
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground/70">Time</dt>
               <dd className="font-medium text-foreground">
                 {song.time_signature || "4/4"}
               </dd>
             </div>
             <div className="flex flex-col gap-1">
-              <dt className="text-xs uppercase tracking-wide">Tempo</dt>
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground/70">Tempo</dt>
               <dd className="font-medium text-foreground">
                 {song.tempo ? `${song.tempo} BPM` : "—"}
               </dd>
             </div>
             <div className="flex flex-col gap-1">
-              <dt className="text-xs uppercase tracking-wide">Added</dt>
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground/70">Added</dt>
               <dd className="font-medium text-foreground">{formattedDate ?? "—"}</dd>
             </div>
           </dl>
 
           {Array.isArray(song.tags) && song.tags.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 pt-2">
               {song.tags.slice(0, 4).map((tag) => (
-                <Badge key={tag} variant="secondary">
+                <Badge key={tag} variant="secondary" className="bg-secondary/50 hover:bg-secondary">
                   {tag}
                 </Badge>
               ))}
               {song.tags.length > 4 ? (
-                <Badge variant="outline">+{song.tags.length - 4}</Badge>
+                <Badge variant="outline" className="text-xs">+{song.tags.length - 4}</Badge>
               ) : null}
             </div>
           ) : null}

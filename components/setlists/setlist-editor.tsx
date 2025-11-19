@@ -80,7 +80,7 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
   const [isAddingSongId, setIsAddingSongId] = React.useState<string | null>(null);
   const [isAddPending, startAddTransition] = React.useTransition();
   const searchTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  
+
   // Arranger modal state
   const [arrangerOpen, setArrangerOpen] = React.useState(false);
   const [arrangerSongId, setArrangerSongId] = React.useState<string | null>(null);
@@ -90,6 +90,7 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
   const [arrangerInitialArrangement, setArrangerInitialArrangement] = React.useState<
     ArrangementItem[] | null
   >(null);
+  const [arrangerSong, setArrangerSong] = React.useState<SearchResult | null>(null);
   const [isSavingArrangement, setIsSavingArrangement] = React.useState(false);
 
   // Delete state
@@ -99,6 +100,111 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
     setTitle(setlist.title);
     setDescription(setlist.description ?? "");
   }, [setlist.title, setlist.description]);
+
+  // Local state for optimistic updates
+  const [localSongs, setLocalSongs] = React.useState(songs);
+  const [pendingOperations, setPendingOperations] = React.useState<Set<string>>(new Set());
+
+  // Sync local state when server props change
+  React.useEffect(() => {
+    setLocalSongs(songs);
+  }, [songs]);
+
+  const handleMoveSong = (entryId: string, direction: "up" | "down") => {
+    // Prevent multiple operations on the same item
+    if (pendingOperations.has(entryId)) return;
+
+    // Calculate indices
+    const currentIndex = localSongs.findIndex((s) => s.id === entryId);
+    if (currentIndex === -1) return;
+
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+    // Boundary checks
+    if (targetIndex < 0 || targetIndex >= localSongs.length) return;
+
+    // 1. Optimistic Update
+    const previousSongs = [...localSongs];
+    const newSongs = [...localSongs];
+
+    // Swap items
+    [newSongs[currentIndex], newSongs[targetIndex]] = [newSongs[targetIndex], newSongs[currentIndex]];
+
+    // Update local state immediately
+    setLocalSongs(newSongs);
+    setPendingOperations((prev) => new Set(prev).add(entryId));
+
+    // Execute server action
+    const executeMove = async () => {
+      try {
+        const result = await moveSetlistSongAction({
+          id: entryId,
+          setlistId: setlist.id,
+          direction,
+        });
+
+        if (!result.success) {
+          // 2. Rollback on error
+          setLocalSongs(previousSongs);
+          toast.error(result.error);
+        } else {
+          // Success - server revalidation will eventually update props
+          router.refresh();
+        }
+      } catch (error) {
+        // Rollback on unexpected error
+        setLocalSongs(previousSongs);
+        toast.error("Failed to move song. Please try again.");
+      } finally {
+        setPendingOperations((prev) => {
+          const next = new Set(prev);
+          next.delete(entryId);
+          return next;
+        });
+      }
+    };
+
+    executeMove();
+  };
+
+  const handleRemoveSong = (entryId: string) => {
+    // Prevent multiple operations
+    if (pendingOperations.has(entryId)) return;
+
+    // 1. Optimistic Update
+    const previousSongs = [...localSongs];
+    const newSongs = localSongs.filter((s) => s.id !== entryId);
+
+    setLocalSongs(newSongs);
+    setPendingOperations((prev) => new Set(prev).add(entryId));
+
+    const executeRemove = async () => {
+      try {
+        const result = await removeSetlistSongAction({ id: entryId, setlistId: setlist.id });
+
+        if (!result.success) {
+          // 2. Rollback on error
+          setLocalSongs(previousSongs);
+          toast.error(result.error);
+        } else {
+          // Success
+          toast.success("Removed from setlist");
+          router.refresh();
+        }
+      } catch (error) {
+        setLocalSongs(previousSongs);
+        toast.error("Failed to remove song.");
+      } finally {
+        setPendingOperations((prev) => {
+          const next = new Set(prev);
+          next.delete(entryId);
+          return next;
+        });
+      }
+    };
+
+    executeRemove();
+  };
 
   // Auto-save title
   React.useEffect(() => {
@@ -182,64 +288,123 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
     };
   }, [searchTerm, handleSongSearch]);
 
-  const handleAddSong = async (songId: string) => {
-    setIsAddingSongId(songId);
-    
+  const handleAddSong = async (song: SearchResult) => {
+    setIsAddingSongId(song.id);
+
     // Fetch sections for the arranger
-    const sectionsResult = await fetchSongSectionsAction(songId);
+    const sectionsResult = await fetchSongSectionsAction(song.id);
     if (!sectionsResult.success) {
       toast.error(sectionsResult.error);
       setIsAddingSongId(null);
       return;
     }
-    
+
     // Open arranger modal
-    setArrangerSongId(songId);
+    setArrangerSongId(song.id);
+    setArrangerSong(song);
     setArrangerSections(sectionsResult.data ?? []);
     setArrangerInitialArrangement(null);
     setArrangerOpen(true);
     setIsAddingSongId(null);
   };
-  
+
   const handleSaveArrangement = async (arrangement: ArrangementItem[] | null) => {
-    if (!arrangerSongId) return;
-    
+    if (!arrangerSongId || !arrangerSong) return;
+
+    // 1. Optimistic Update
+    const tempId = `temp-${Date.now()}`;
+    const previousSongs = [...localSongs];
+
+    const nextOrder = localSongs.length > 0
+      ? Math.max(...localSongs.map(s => s.order_index)) + 1
+      : 0;
+
+    const optimisticEntry = {
+      id: tempId,
+      order_index: nextOrder,
+      custom_key: null,
+      custom_tempo: null,
+      custom_time_signature: null,
+      notes: null,
+      arrangement,
+      song: {
+        id: arrangerSong.id,
+        title: arrangerSong.title,
+        artist: arrangerSong.artist,
+        key: arrangerSong.key,
+        tempo: arrangerSong.tempo,
+        time_signature: arrangerSong.time_signature,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        created_by: "", // Placeholder
+        original_key: arrangerSong.key,
+        slug: "", // Placeholder
+        content: "", // Placeholder
+        writer: null,
+        youtube_url: null,
+        tags: [],
+        is_public: false,
+      },
+    };
+
+    setLocalSongs([...localSongs, optimisticEntry]);
+    setPendingOperations((prev) => new Set(prev).add(tempId));
+
+    // Close modal immediately
+    setArrangerOpen(false);
+    setArrangerSongId(null);
+    setArrangerSong(null);
+    setArrangerSections([]);
+    setArrangerInitialArrangement(null);
+    setSearchResults([]);
+    setSearchTerm("");
+
     setIsSavingArrangement(true);
-    startAddTransition(async () => {
-      const result = await addSetlistSongAction({
-        setlistId: setlist.id,
-        songId: arrangerSongId,
-        arrangement,
-      });
-      
-      if (!result.success) {
-        toast.error(result.error);
+
+    const executeAdd = async () => {
+      try {
+        const result = await addSetlistSongAction({
+          setlistId: setlist.id,
+          songId: arrangerSongId,
+          arrangement,
+        });
+
+        if (!result.success) {
+          // 2. Rollback on error
+          setLocalSongs(previousSongs);
+          toast.error(result.error);
+          // Re-open modal? Maybe just show error.
+        } else {
+          // Success
+          toast.success("Song added to setlist");
+          router.refresh();
+        }
+      } catch (error) {
+        setLocalSongs(previousSongs);
+        toast.error("Failed to add song.");
+      } finally {
         setIsSavingArrangement(false);
-        return;
+        setPendingOperations((prev) => {
+          const next = new Set(prev);
+          next.delete(tempId);
+          return next;
+        });
       }
-      
-      toast.success("Song added to setlist");
-      setArrangerOpen(false);
-      setArrangerSongId(null);
-      setArrangerSections([]);
-      setArrangerInitialArrangement(null);
-      setIsSavingArrangement(false);
-      setSearchResults([]);
-      setSearchTerm("");
-      router.refresh();
-    });
+    };
+
+    executeAdd();
   };
 
   const handleDeleteSetlist = async () => {
     setIsDeleting(true);
     const result = await deleteSetlistAction({ id: setlist.id });
-    
+
     if (!result.success) {
       toast.error(result.error);
       setIsDeleting(false);
       return;
     }
-    
+
     toast.success("Setlist deleted");
     router.push("/setlists");
   };
@@ -352,14 +517,17 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              {songs.map((entry, index) => (
+              {localSongs.map((entry, index) => (
                 <SetlistSongRow
                   key={entry.id}
                   index={index}
-                  total={songs.length}
+                  total={localSongs.length}
                   setlistId={setlist.id}
                   entry={entry}
                   onUpdate={() => router.refresh()}
+                  onMove={(direction) => handleMoveSong(entry.id, direction)}
+                  onRemove={() => handleRemoveSong(entry.id)}
+                  isPending={pendingOperations.has(entry.id)}
                 />
               ))}
             </div>
@@ -405,7 +573,7 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
                         type="button"
                         size="sm"
                         disabled={isAddingSongId === result.id || isAddPending}
-                        onClick={() => handleAddSong(result.id)}
+                        onClick={() => handleAddSong(result)}
                       >
                         {isAddingSongId === result.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
                       </Button>
@@ -419,7 +587,7 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
           </div>
         </CardContent>
       </Card>
-      
+
       <SongArrangerModal
         open={arrangerOpen}
         onOpenChange={setArrangerOpen}
@@ -447,9 +615,12 @@ type SetlistSongRowProps = {
     song: Song | null;
   };
   onUpdate: () => void;
+  onMove: (direction: "up" | "down") => void;
+  onRemove: () => void;
+  isPending: boolean;
 };
 
-function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSongRowProps) {
+function SetlistSongRow({ index, total, setlistId, entry, onUpdate, onMove, onRemove, isPending }: SetlistSongRowProps) {
   const [customKey, setCustomKey] = React.useState(entry.custom_key ?? "");
   const [customTempo, setCustomTempo] = React.useState(
     entry.custom_tempo !== null ? String(entry.custom_tempo) : "",
@@ -459,9 +630,7 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
   );
   const [notes, setNotes] = React.useState(entry.notes ?? "");
   const [isUpdating, startUpdating] = React.useTransition();
-  const [isMoving, startMoving] = React.useTransition();
-  const [isRemoving, startRemoving] = React.useTransition();
-  
+
   // Arranger modal state
   const [arrangerOpen, setArrangerOpen] = React.useState(false);
   const [arrangerSections, setArrangerSections] = React.useState<
@@ -598,63 +767,36 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
     return () => clearTimeout(timeout);
   }, [notes, entry.notes, entry.id, setlistId, customKey, customTempo, customTimeSignature, onUpdate]);
 
-  const handleMove = (direction: "up" | "down") => {
-    startMoving(async () => {
-      const result = await moveSetlistSongAction({
-        id: entry.id,
-        setlistId,
-        direction,
-      });
 
-      if (!result.success) {
-        toast.error(result.error);
-        return;
-      }
 
-      onUpdate();
-    });
-  };
-
-  const handleRemove = () => {
-    startRemoving(async () => {
-      const result = await removeSetlistSongAction({ id: entry.id, setlistId });
-      if (!result.success) {
-        toast.error(result.error);
-        return;
-      }
-      toast.success("Removed from setlist");
-      onUpdate();
-    });
-  };
-  
   const handleOpenArranger = async () => {
     if (!entry.song?.id) return;
-    
+
     const sectionsResult = await fetchSongSectionsAction(entry.song.id);
     if (!sectionsResult.success) {
       toast.error(sectionsResult.error);
       return;
     }
-    
+
     setArrangerSections(sectionsResult.data ?? []);
     setArrangerOpen(true);
   };
-  
+
   const handleSaveArrangement = async (arrangement: ArrangementItem[] | null) => {
     setIsSavingArrangement(true);
-    
+
     const result = await updateSetlistSongAction({
       id: entry.id,
       setlistId,
       arrangement,
     });
-    
+
     if (!result.success) {
       toast.error(result.error);
       setIsSavingArrangement(false);
       return;
     }
-    
+
     toast.success("Arrangement updated");
     setArrangerOpen(false);
     setIsSavingArrangement(false);
@@ -664,13 +806,13 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
   const baseSong = entry.song;
   const canonicalUrl = baseSong
     ? `/songs/${baseSong.id}?${new URLSearchParams({
-        setlistId,
-        entryId: entry.id,
-      }).toString()}`
+      setlistId,
+      entryId: entry.id,
+    }).toString()}`
     : null;
 
   return (
-    <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+    <div className={`rounded-lg border border-border/60 bg-muted/20 p-4 transition-opacity ${isPending ? "opacity-60" : ""}`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <p className="text-sm font-medium text-foreground">
@@ -694,8 +836,8 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => handleMove("up")}
-            disabled={isMoving || index === 0}
+            onClick={() => onMove("up")}
+            disabled={isPending || index === 0}
           >
             <ArrowUp className="h-4 w-4" />
             <span className="sr-only">Move up</span>
@@ -704,8 +846,8 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => handleMove("down")}
-            disabled={isMoving || index === total - 1}
+            onClick={() => onMove("down")}
+            disabled={isPending || index === total - 1}
           >
             <ArrowDown className="h-4 w-4" />
             <span className="sr-only">Move down</span>
@@ -742,10 +884,10 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
             type="button"
             variant="ghost"
             size="icon"
-            onClick={handleRemove}
-            disabled={isRemoving}
+            onClick={onRemove}
+            disabled={isPending}
           >
-            {isRemoving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
             <span className="sr-only">Remove</span>
           </Button>
         </div>
@@ -807,7 +949,7 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate }: SetlistSon
           />
         </div>
       </div>
-      
+
       <SongArrangerModal
         open={arrangerOpen}
         onOpenChange={setArrangerOpen}
