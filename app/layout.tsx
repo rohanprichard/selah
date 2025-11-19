@@ -56,9 +56,9 @@ export default async function RootLayout({
             {header}
             <main
               id="main-content"
-              className="flex-1 bg-gradient-to-b from-background via-background to-background/60"
-        >
-          {children}
+              className="flex-1 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-background via-background to-muted/50"
+            >
+              {children}
             </main>
             <SiteFooter />
           </div>
