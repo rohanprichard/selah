@@ -18,6 +18,9 @@ I created a `ChordTooltip` component that wraps the chord text. It uses `HoverCa
 ### 3. Song Viewer Integration
 I updated `SongViewer` to render chords using absolute positioning (`left: Xch`) instead of a pre-formatted string. This allows each chord to be an interactive element while maintaining perfect alignment with the lyrics.
 
+### 4. Font Size Controls Fix
+Fixed the font size controls (sm/md/lg/xl) by removing fixed `font-size` values from `.chord-line` and `.lyric-line` in `globals.css`. The controls now properly affect both chord and lyric text size.
+
 ## Verification Results
 
 ### Automated Tests
@@ -29,6 +32,7 @@ I updated `SongViewer` to render chords using absolute positioning (`left: Xch`)
 - **Visuals**:
     -   **Guitar**: Verified standard open chords, barre chords for sharps/flats, and complex variations (7ths, sus).
     -   **Piano**: Verified correct key highlighting for major, minor, and complex chords, including correct handling of enharmonics (D# matches Eb keys).
+- **Font Size Controls**: Verified all four sizes (sm/md/lg/xl) now properly change the text size.
 
 ## Files Created/Modified
 - `components/ui/hover-card.tsx`
@@ -37,3 +41,4 @@ I updated `SongViewer` to render chords using absolute positioning (`left: Xch`)
 - `components/chords/piano-visualizer.tsx`
 - `lib/guitar-chords.ts`
 - `components/song-viewer.tsx`
+- `app/globals.css`
