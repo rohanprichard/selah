@@ -103,7 +103,6 @@
 /* Chord display styling */
 .chord-line {
   font-family: var(--font-mono);
-  font-size: 0.9rem;
   line-height: 1.6;
   letter-spacing: -0.01em;
   font-weight: 600;
@@ -112,17 +111,10 @@
 
 .lyric-line {
   font-family: var(--font-mono);
-  font-size: 0.9rem;
   line-height: 1.6;
   letter-spacing: -0.01em;
   font-weight: 500;
   white-space: pre-wrap;
-}
-
-@media (max-width: 640px) {
-  .chord-line {
-    font-size: 0.85rem;
-  }
 }
 
 @media print {
