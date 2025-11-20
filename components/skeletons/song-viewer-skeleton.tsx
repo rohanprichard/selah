@@ -3,9 +3,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function SongViewerSkeleton({ hideHeader = false }: { hideHeader?: boolean }) {
     return (
-        <div className="space-y-6 mb-24">
-            <Card>
-                <CardHeader className="gap-6">
+        <div className="mx-auto w-full max-w-4xl px-4 py-12 space-y-6 pb-24">
+            <div className="space-y-8">
+                <div className="space-y-4">
                     {/* Title/Artist (conditionally shown) */}
                     {!hideHeader && (
                         <div className="flex flex-col gap-2">
@@ -16,65 +16,61 @@ export function SongViewerSkeleton({ hideHeader = false }: { hideHeader?: boolea
                         </div>
                     )}
 
-                    {/* Controls */}
-                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3">
-                        <div className="flex items-center gap-2">
-                            <Skeleton className="h-10 w-32" /> {/* Transpose */}
-                            <Skeleton className="h-10 w-28" /> {/* Font size */}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Skeleton className="h-10 w-10" /> {/* Icon button */}
-                            <Skeleton className="h-10 w-10" /> {/* Icon button */}
-                            <Skeleton className="h-10 w-10" /> {/* Icon button */}
-                            <Skeleton className="h-10 w-10" /> {/* Icon button */}
-                        </div>
-                    </div>
-
                     {/* Metadata */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 rounded-lg border border-border/50 bg-muted/20 p-4">
-                        <div className="space-y-2">
-                            <Skeleton className="h-3 w-8" /> {/* Label */}
-                            <Skeleton className="h-4 w-12" /> {/* Value */}
-                        </div>
-                        <div className="space-y-2">
-                            <Skeleton className="h-3 w-12" /> {/* Label */}
-                            <Skeleton className="h-4 w-16" /> {/* Value */}
-                        </div>
-                        <div className="space-y-2">
-                            <Skeleton className="h-3 w-20" /> {/* Label */}
-                            <Skeleton className="h-4 w-8" /> {/* Value */}
+                    <div className="flex flex-wrap gap-3">
+                        <Skeleton className="h-10 w-24" />
+                        <Skeleton className="h-10 w-32" />
+                        <Skeleton className="h-10 w-20" />
+                        <div className="flex gap-2">
+                            <Skeleton className="h-6 w-16 rounded-full" />
+                            <Skeleton className="h-6 w-20 rounded-full" />
                         </div>
                     </div>
+                </div>
 
-                    {/* Tags */}
-                    <div className="flex gap-2">
-                        <Skeleton className="h-6 w-16 rounded-full" />
-                        <Skeleton className="h-6 w-20 rounded-full" />
-                        <Skeleton className="h-6 w-14 rounded-full" />
-                    </div>
-                </CardHeader>
-
-                <CardContent className="space-y-6">
-                    {/* Song sections */}
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className="space-y-3">
-                            {/* Section header */}
-                            <div className="flex items-center gap-2">
-                                <Skeleton className="h-6 w-16 rounded" /> {/* Badge */}
-                                <Skeleton className="h-6 w-32" /> {/* Label */}
-                            </div>
-
-                            {/* Lines */}
-                            <div className="space-y-2">
-                                <Skeleton className="h-5 w-full" />
-                                <Skeleton className="h-5 w-11/12" />
-                                <Skeleton className="h-5 w-full" />
-                                <Skeleton className="h-5 w-10/12" />
-                            </div>
+                {/* Toolbar Skeleton */}
+                <div className="sticky top-20 z-40 -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <div className="glass rounded-xl p-2 flex items-center justify-between gap-2 shadow-lg h-14">
+                        <div className="flex items-center gap-2">
+                            <Skeleton className="h-8 w-32" />
                         </div>
-                    ))}
-                </CardContent>
-            </Card>
+                        <div className="flex items-center gap-2">
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid gap-8 lg:grid-cols-[1fr,300px]">
+                    <div className="space-y-8">
+                        {/* Song sections */}
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="space-y-3">
+                                {/* Section header */}
+                                <div className="flex items-center gap-2">
+                                    <Skeleton className="h-6 w-16 rounded" /> {/* Badge */}
+                                    <Skeleton className="h-6 w-32" /> {/* Label */}
+                                </div>
+
+                                {/* Lines */}
+                                <div className="space-y-2">
+                                    <Skeleton className="h-5 w-full" />
+                                    <Skeleton className="h-5 w-11/12" />
+                                    <Skeleton className="h-5 w-full" />
+                                    <Skeleton className="h-5 w-10/12" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    {/* Sidebar Skeleton */}
+                    <div className="hidden lg:block space-y-6">
+                        <div className="sticky top-40 space-y-4">
+                            <Skeleton className="h-4 w-20" />
+                            <Skeleton className="aspect-video w-full rounded-xl" />
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

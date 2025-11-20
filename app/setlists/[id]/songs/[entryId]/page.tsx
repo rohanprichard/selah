@@ -34,7 +34,7 @@ export default async function SetlistSongViewerPage({
   const nextHref = navigation.nextEntryId ? `/setlists/${id}/songs/${navigation.nextEntryId}` : undefined;
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className="mx-auto w-full max-w-4xl px-4 py-12 space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <Button asChild variant="ghost" size="sm">
           <Link href={`/setlists/${id}`}>
