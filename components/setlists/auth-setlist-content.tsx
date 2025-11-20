@@ -5,32 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { SetlistEditor } from "@/components/setlists/setlist-editor";
 import { SetlistLiveView } from "@/components/setlists/setlist-live-view";
-
-type SetlistDetail = {
-    setlist: {
-        id: string;
-        title: string;
-        description: string | null;
-        share_token: string;
-    };
-    songs: Array<{
-        id: string;
-        order_index: number;
-        custom_key: string | null;
-        custom_tempo: number | null;
-        custom_time_signature: string | null;
-        notes: string | null;
-        arrangement: any;
-        song: {
-            id: string;
-            title: string;
-            artist: string | null;
-            key: string;
-            tempo: number | null;
-            time_signature: string | null;
-        } | null;
-    }>;
-};
+import { SetlistDetail } from "@/lib/supabase/setlists";
 
 type AuthSetlistContentProps = {
     detail: SetlistDetail;
