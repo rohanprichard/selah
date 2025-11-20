@@ -270,8 +270,10 @@ export function SongViewer({
             <h1 className="text-2xl font-bold tracking-tight">{song.title}</h1>
           </div>
           <div className="flex items-center gap-4">
-            <Clock />
-            <Separator orientation="vertical" className="h-6" />
+            <div className="hidden sm:block">
+              <Clock />
+            </div>
+            <Separator orientation="vertical" className="h-6 hidden sm:block" />
             <Button
               variant="ghost"
               size="icon"
@@ -285,9 +287,10 @@ export function SongViewer({
               variant="default"
               size="sm"
               onClick={() => toggleLiveMode(false)}
-              className="h-9 px-4 font-medium"
+              className="h-9 px-3 sm:px-4 font-medium"
             >
-              Exit Live Mode
+              <span className="sm:hidden">Exit</span>
+              <span className="hidden sm:inline">Exit Live Mode</span>
             </Button>
           </div>
         </div>
