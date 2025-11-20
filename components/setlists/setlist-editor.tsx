@@ -35,7 +35,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { ArrowDown, ArrowUp, Eye, ExternalLink, Loader2, Trash2, ListOrdered, Monitor } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, ExternalLink, Loader2, Trash2, ListOrdered, Monitor, Edit3 } from "lucide-react";
 import { SongArrangerModal } from "@/components/setlists/song-arranger-modal";
 
 type SetlistEditorProps = {
@@ -409,42 +409,75 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
     router.push("/setlists");
   };
 
+  const [isEditingHeader, setIsEditingHeader] = React.useState(false);
+
   return (
     <div className="space-y-10">
       <Card>
         <CardHeader>
-          <CardTitle>Setlist</CardTitle>
-          <CardDescription>
-            Update your setlist details and share the public link with your team.
-          </CardDescription>
+          {!isEditingHeader ? (
+            <div className="space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 space-y-2">
+                  <CardTitle className="text-3xl">{title}</CardTitle>
+                  {description && (
+                    <CardDescription className="text-base">{description}</CardDescription>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEditingHeader(true)}
+                  title="Edit setlist details"
+                  className="shrink-0"
+                >
+                  <Edit3 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <CardTitle>Edit Setlist Details</CardTitle>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="setlist-title">Title</Label>
+                    {isSavingDetails && (
+                      <span className="text-xs text-muted-foreground">Saving...</span>
+                    )}
+                  </div>
+                  <Input
+                    id="setlist-title"
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
+                    placeholder="Sunday Morning Worship"
+                    required
+                  />
+                </div>
+                <div className="sm:col-span-2 space-y-2">
+                  <Label htmlFor="setlist-description">Description</Label>
+                  <Textarea
+                    id="setlist-description"
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    placeholder="Add context, scripture, or service flow notes."
+                    rows={3}
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditingHeader(false)}
+                  >
+                    Done
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2 space-y-2">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="setlist-title">Title</Label>
-                {isSavingDetails && (
-                  <span className="text-xs text-muted-foreground">Saving...</span>
-                )}
-              </div>
-              <Input
-                id="setlist-title"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                placeholder="Sunday Morning Worship"
-                required
-              />
-            </div>
-            <div className="sm:col-span-2 space-y-2">
-              <Label htmlFor="setlist-description">Description</Label>
-              <Textarea
-                id="setlist-description"
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                placeholder="Add context, scripture, or service flow notes."
-                rows={3}
-              />
-            </div>
             <div className="flex flex-wrap items-center justify-between gap-3 sm:col-span-2">
               <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-sm">
                 <span className="font-medium text-foreground">Share link</span>

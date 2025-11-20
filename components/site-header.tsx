@@ -1,5 +1,12 @@
 import Link from "next/link";
-
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { SelahLogo } from "@/components/selah-logo";
@@ -9,6 +16,28 @@ const navLinks = [
   { href: "/my-songs", label: "My Songs" },
   { href: "/setlists", label: "My Setlists" },
 ];
+
+function MobileNav() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Toggle menu</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        {navLinks.map((link) => (
+          <DropdownMenuItem key={link.href} asChild>
+            <Link href={link.href} className="w-full cursor-pointer">
+              {link.label}
+            </Link>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export async function SiteHeader() {
   return (
@@ -32,17 +61,9 @@ export async function SiteHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <nav className="flex items-center gap-4 text-sm font-medium sm:hidden">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-muted-foreground transition hover:text-foreground"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <div className="sm:hidden">
+            <MobileNav />
+          </div>
           <ThemeSwitcher />
           <AuthButton />
         </div>
