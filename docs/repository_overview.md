@@ -266,6 +266,10 @@ selah/
   - Shareable public URLs (`/s/[token]`)
   - No authentication required for viewers
   - Read-only access to setlist and associated songs
+- **Live Mode**:
+  - Distraction-free view for performance
+  - Hides metadata, sidebar, and extra controls
+  - Focuses on lyrics and chords
 
 ### 5. My Songs Dashboard (`/my-songs`)
 - **Authenticated management view**

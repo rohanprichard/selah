@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { SelahLogo } from "@/components/selah-logo";
 
 const navLinks = [
   { href: "/songs", label: "Search" },
@@ -14,7 +15,8 @@ export async function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
+          <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+            <SelahLogo className="h-6 w-6" />
             Selah
           </Link>
           <nav className="hidden items-center gap-6 text-sm font-medium sm:flex">

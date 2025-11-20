@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Badge } from "@/components/ui/badge";
@@ -17,11 +17,12 @@ import {
 } from "@/lib/chords";
 import type { Song, SongSection, ArrangementItem } from "@/lib/types";
 
-import { Copy, Edit3, Minus, Music, Plus, Printer, Share2, Wand2, Settings2, Type } from "lucide-react";
+import { Copy, Edit3, Minus, Music, Plus, Printer, Share2, Wand2, Settings2, Type, Maximize, Minimize } from "lucide-react";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { ChordTooltip } from "@/components/chords/chord-tooltip";
+import { SelahLogo } from "@/components/selah-logo";
 
 const FONT_SIZES = {
   sm: "text-sm leading-6",
@@ -61,6 +62,10 @@ export function SongViewer({
   arrangement,
   hideHeader = false,
 }: SongViewerProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [transposeSteps, setTransposeSteps] = React.useState(initialTranspose ?? 0);
   const [fontSize, setFontSize] = React.useState<FontSize>("md");
   const [showChords, setShowChords] = React.useState(() => {
@@ -68,7 +73,42 @@ export function SongViewer({
     const saved = localStorage.getItem("selah-show-chords");
     return saved !== "false";
   });
-  const pathname = usePathname();
+
+  // Initialize from URL param or localStorage
+  const [isLiveMode, setIsLiveMode] = React.useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("selah-live-mode");
+      if (stored === "true") return true;
+    }
+    return searchParams.get("live") === "true";
+  });
+
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+
+  // Sync URL and localStorage when Live Mode changes
+  const toggleLiveMode = React.useCallback((enabled: boolean) => {
+    setIsLiveMode(enabled);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("selah-live-mode", String(enabled));
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (enabled) {
+      params.set("live", "true");
+    } else {
+      params.delete("live");
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  // Restore URL param if localStorage has it but URL doesn't
+  React.useEffect(() => {
+    if (isLiveMode && searchParams.get("live") !== "true") {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("live", "true");
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }
+  }, [isLiveMode, pathname, router, searchParams]);
 
   React.useEffect(() => {
     if (typeof initialTranspose === "number") {
@@ -81,6 +121,14 @@ export function SongViewer({
       localStorage.setItem("selah-show-chords", String(showChords));
     }
   }, [showChords]);
+
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
   const parsedSections = React.useMemo(() => {
     return sections.map<ParsedSection>((section) => ({
@@ -177,6 +225,18 @@ export function SongViewer({
     }
   };
 
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
   const displayedKey = React.useMemo(() => {
     return transposeLabel(song.key, transposeSteps);
   }, [song.key, transposeSteps]);
@@ -203,8 +263,38 @@ export function SongViewer({
 
   return (
     <div className="space-y-8 mb-32">
-      {/* Header Section */}
-      {!hideHeader && (
+      {/* Live Mode Header */}
+      {isLiveMode && (
+        <div className="sticky top-0 z-50 -mx-4 px-4 py-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/40 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold tracking-tight">{song.title}</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <Clock />
+            <Separator orientation="vertical" className="h-6" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleFullscreen}
+              title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+              className="h-10 w-10"
+            >
+              {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => toggleLiveMode(false)}
+              className="h-9 px-4 font-medium"
+            >
+              Exit Live Mode
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Header Section (Standard) */}
+      {!hideHeader && !isLiveMode && (
         <div className="space-y-4">
           <div className="flex flex-col gap-2">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{song.title}</h1>
@@ -232,117 +322,129 @@ export function SongViewer({
         </div>
       )}
 
-      {/* Sticky Toolbar */}
-      <div className="sticky top-20 z-40 -mx-4 px-4 sm:mx-0 sm:px-0 print:hidden">
-        <div className="glass rounded-xl p-2 flex items-center justify-between gap-2 shadow-lg">
-          <div className="flex items-center gap-2">
-            <TransposeControls
-              onDecrease={() => handleTranspose(-1)}
-              onIncrease={() => handleTranspose(1)}
-              value={transposeSteps}
-            />
-            <Separator orientation="vertical" className="h-6 hidden sm:block" />
-            <div className="hidden sm:flex items-center gap-1">
-              <Button
-                variant={showChords ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setShowChords(!showChords)}
-                className="h-8 px-3"
-              >
-                <Music className="mr-2 h-4 w-4" />
-                {showChords ? "Chords On" : "Chords Off"}
-              </Button>
-              <FontSizeMenu value={fontSize} onChange={handleFontSize} />
+      {/* Sticky Toolbar (Standard) */}
+      {!isLiveMode && (
+        <div className="sticky top-20 z-40 -mx-4 px-4 sm:mx-0 sm:px-0 print:hidden">
+          <div className="glass rounded-xl p-2 flex items-center justify-between gap-2 shadow-lg">
+            <div className="flex items-center gap-2">
+              <TransposeControls
+                onDecrease={() => handleTranspose(-1)}
+                onIncrease={() => handleTranspose(1)}
+                value={transposeSteps}
+              />
+              <Separator orientation="vertical" className="h-6 hidden sm:block" />
+              <div className="hidden sm:flex items-center gap-1">
+                <Button
+                  variant={showChords ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setShowChords(!showChords)}
+                  className="h-8 px-3"
+                >
+                  <Music className="mr-2 h-4 w-4" />
+                  {showChords ? "Chords On" : "Chords Off"}
+                </Button>
+                <FontSizeMenu value={fontSize} onChange={handleFontSize} />
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-1">
-            {/* Mobile Menu for extra controls */}
-            <div className="sm:hidden">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Settings2 className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-56 p-2">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between px-2 py-1">
-                      <span className="text-sm font-medium">Chords</span>
-                      <Button
-                        variant={showChords ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setShowChords(!showChords)}
-                        className="h-7 text-xs"
-                      >
-                        {showChords ? "On" : "Off"}
-                      </Button>
-                    </div>
-                    <Separator />
-                    <div className="px-2 py-1">
-                      <span className="text-sm font-medium mb-2 block">Font Size</span>
-                      <div className="flex gap-1">
-                        {(["sm", "md", "lg", "xl"] as FontSize[]).map((size) => (
-                          <Button
-                            key={size}
-                            variant={fontSize === size ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => handleFontSize(size)}
-                            className="h-7 flex-1 text-xs"
-                          >
-                            {size.toUpperCase()}
-                          </Button>
-                        ))}
+            <div className="flex items-center gap-1">
+              {/* Mobile Menu for extra controls */}
+              <div className="sm:hidden">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Settings2 className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-2">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between px-2 py-1">
+                        <span className="text-sm font-medium">Chords</span>
+                        <Button
+                          variant={showChords ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setShowChords(!showChords)}
+                          className="h-7 text-xs"
+                        >
+                          {showChords ? "On" : "Off"}
+                        </Button>
+                      </div>
+                      <Separator />
+                      <div className="px-2 py-1">
+                        <span className="text-sm font-medium mb-2 block">Font Size</span>
+                        <div className="flex gap-1">
+                          {(["sm", "md", "lg", "xl"] as FontSize[]).map((size) => (
+                            <Button
+                              key={size}
+                              variant={fontSize === size ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => handleFontSize(size)}
+                              className="h-7 flex-1 text-xs"
+                            >
+                              {size.toUpperCase()}
+                            </Button>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <Separator orientation="vertical" className="h-6 hidden sm:block" />
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleLiveMode(true)}
+                className="h-8 px-3 font-medium"
+                title="Enter Live Mode"
+              >
+                Live Mode
+              </Button>
+
+              <Button variant="ghost" size="icon" onClick={handleCopyLyrics} title="Copy lyrics" className="h-8 w-8">
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleShare} title="Share" className="h-8 w-8">
+                <Share2 className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handlePrint} title="Print" className="h-8 w-8">
+                <Printer className="h-4 w-4" />
+              </Button>
+
+              {canRemix && (
+                <Button asChild variant="ghost" size="icon" title="Remix" className="h-8 w-8">
+                  <Link href={`/songs/${song.id}/remix`}>
+                    <Wand2 className="h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
+
+              {isOwner && (
+                <Button asChild variant="default" size="sm" className="h-8 px-3 ml-1">
+                  <Link href={`/songs/${song.id}/edit`}>
+                    <Edit3 className="mr-2 h-3 w-3" /> Edit
+                  </Link>
+                </Button>
+              )}
             </div>
-
-            <Separator orientation="vertical" className="h-6 hidden sm:block" />
-
-            <Button variant="ghost" size="icon" onClick={handleCopyLyrics} title="Copy lyrics" className="h-8 w-8">
-              <Copy className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={handleShare} title="Share" className="h-8 w-8">
-              <Share2 className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={handlePrint} title="Print" className="h-8 w-8">
-              <Printer className="h-4 w-4" />
-            </Button>
-
-            {canRemix && (
-              <Button asChild variant="ghost" size="icon" title="Remix" className="h-8 w-8">
-                <Link href={`/songs/${song.id}/remix`}>
-                  <Wand2 className="h-4 w-4" />
-                </Link>
-              </Button>
-            )}
-
-            {isOwner && (
-              <Button asChild variant="default" size="sm" className="h-8 px-3 ml-1">
-                <Link href={`/songs/${song.id}/edit`}>
-                  <Edit3 className="mr-2 h-3 w-3" /> Edit
-                </Link>
-              </Button>
-            )}
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content */}
-      <div className="grid gap-8 lg:grid-cols-[1fr,300px]">
+      <div className={cn("grid gap-8", !isLiveMode && "lg:grid-cols-[1fr,300px]")}>
         <Card className="border-none shadow-none bg-transparent">
           <CardContent className="p-0 space-y-8">
-            {notes && (
+            {notes && !isLiveMode && (
               <div className="rounded-lg border border-dashed border-primary/20 bg-primary/5 p-4 text-sm">
                 <p className="text-xs font-bold uppercase tracking-wide text-primary mb-1">Setlist Notes</p>
                 <p className="text-muted-foreground whitespace-pre-wrap">{notes}</p>
               </div>
             )}
 
-            <article className={cn("space-y-8", FONT_SIZES[fontSize])}>
+            <article className={cn("space-y-8", isLiveMode ? "text-xl" : FONT_SIZES[fontSize])}>
               {displayedSections.map((section, index) => (
                 <section key={`${section.id}-${index}`} className="space-y-2 break-inside-avoid">
                   {section.type === 'label' || section.type === 'custom' ? (
@@ -412,15 +514,38 @@ export function SongViewer({
         </Card>
 
         {/* Sidebar (Desktop) */}
-        <div className="hidden lg:block space-y-6">
-          {song.youtube_url && (
-            <div className="sticky top-40 space-y-4">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Reference</h3>
-              <YouTubeEmbed url={song.youtube_url} />
-            </div>
-          )}
-        </div>
+        {!isLiveMode && (
+          <div className="hidden lg:block space-y-6">
+            {song.youtube_url && (
+              <div className="sticky top-40 space-y-4">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Reference</h3>
+                <YouTubeEmbed url={song.youtube_url} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+function Clock() {
+  const [time, setTime] = React.useState<string>("");
+
+  React.useEffect(() => {
+    const updateTime = () => {
+      setTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!time) return null;
+
+  return (
+    <div className="flex items-center px-2 text-lg font-mono font-medium text-muted-foreground tabular-nums">
+      {time}
     </div>
   );
 }

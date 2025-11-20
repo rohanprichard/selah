@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,14 @@ export function SetlistNavigation({
     total,
 }: SetlistNavigationProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const isLiveMode = searchParams.get("live") === "true";
+
+    const getHrefWithParams = (href: string) => {
+        if (!isLiveMode) return href;
+        const separator = href.includes("?") ? "&" : "?";
+        return `${href}${separator}live=true`;
+    };
 
     React.useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -37,16 +45,16 @@ export function SetlistNavigation({
 
             if (event.key === "ArrowLeft" && prevHref) {
                 event.preventDefault();
-                router.push(prevHref);
+                router.push(getHrefWithParams(prevHref));
             } else if (event.key === "ArrowRight" && nextHref) {
                 event.preventDefault();
-                router.push(nextHref);
+                router.push(getHrefWithParams(nextHref));
             }
         };
 
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [prevHref, nextHref, router]);
+    }, [prevHref, nextHref, router, isLiveMode]); // Added isLiveMode dependency
 
     // Don't render anything if there's only one song
     if (total <= 1) {
@@ -63,7 +71,7 @@ export function SetlistNavigation({
                     className="fixed bottom-6 left-6 z-50 h-14 w-14 rounded-full bg-primary p-0 text-primary-foreground shadow-xl transition-all hover:bg-primary/90 hover:scale-110 hover:shadow-2xl print:hidden"
                     aria-label={`Previous song (${position - 1} of ${total})`}
                 >
-                    <Link href={prevHref}>
+                    <Link href={getHrefWithParams(prevHref)}>
                         <ChevronLeft className="h-6 w-6" aria-hidden="true" />
                     </Link>
                 </Button>
@@ -77,7 +85,7 @@ export function SetlistNavigation({
                     className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-primary p-0 text-primary-foreground shadow-xl transition-all hover:bg-primary/90 hover:scale-110 hover:shadow-2xl print:hidden"
                     aria-label={`Next song (${position + 1} of ${total})`}
                 >
-                    <Link href={nextHref}>
+                    <Link href={getHrefWithParams(nextHref)}>
                         <ChevronRight className="h-6 w-6" aria-hidden="true" />
                     </Link>
                 </Button>
