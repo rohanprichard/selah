@@ -82,7 +82,7 @@ export function Hero() {
 
                 <div className="space-y-4">
                   <div className="flex gap-2">
-                    <Badge variant="secondary">Key: G</Badge>
+                    <Badge variant="secondary">Key: D</Badge>
                     <Badge variant="secondary">4/4</Badge>
                     <Badge variant="secondary">72 BPM</Badge>
                   </div>
