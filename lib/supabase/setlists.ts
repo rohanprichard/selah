@@ -114,6 +114,7 @@ export async function fetchSetlistByShareToken(
   const supabase = await createClient({
     headers: {
       "x-share-token": token,
+      "X-Share-Token": token,
     },
   });
 

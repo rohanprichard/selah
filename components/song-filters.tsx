@@ -42,17 +42,7 @@ export function SongFilters({
 
   const searchParamsString = React.useMemo(() => searchParams.toString(), [searchParams]);
 
-  React.useEffect(() => {
-    setQuery(initialQuery);
-  }, [initialQuery]);
 
-  React.useEffect(() => {
-    setSelectedKey(initialKey || "any");
-  }, [initialKey]);
-
-  React.useEffect(() => {
-    setSelectedTag(initialTag || "any");
-  }, [initialTag]);
 
   const updateParam = React.useCallback(
     (key: string, value?: string, options?: { replace?: boolean }) => {
