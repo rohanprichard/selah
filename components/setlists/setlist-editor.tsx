@@ -96,10 +96,7 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
   // Delete state
   const [isDeleting, setIsDeleting] = React.useState(false);
 
-  React.useEffect(() => {
-    setTitle(setlist.title);
-    setDescription(setlist.description ?? "");
-  }, [setlist.title, setlist.description]);
+
 
   // Local state for optimistic updates
   const [localSongs, setLocalSongs] = React.useState(songs);
@@ -690,12 +687,7 @@ function SetlistSongRow({ index, total, setlistId, entry, onUpdate, onMove, onRe
   >([]);
   const [isSavingArrangement, setIsSavingArrangement] = React.useState(false);
 
-  React.useEffect(() => {
-    setCustomKey(entry.custom_key ?? "");
-    setCustomTempo(entry.custom_tempo !== null ? String(entry.custom_tempo) : "");
-    setCustomTimeSignature(entry.custom_time_signature ?? "");
-    setNotes(entry.notes ?? "");
-  }, [entry.custom_key, entry.custom_tempo, entry.custom_time_signature, entry.notes]);
+
 
   // Auto-save custom key
   React.useEffect(() => {
