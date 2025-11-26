@@ -51,8 +51,11 @@ export function SongArrangerModal({
   const [customContent, setCustomContent] = React.useState("");
   const [customSectionIndex, setCustomSectionIndex] = React.useState<number | null>(null);
 
+  const prevOpen = React.useRef(open);
+
   React.useEffect(() => {
-    if (open) {
+    // Only reset when the modal opens (open changes from false to true)
+    if (open && !prevOpen.current) {
       setArrangement(buildInitialArrangement(sections, initialArrangement));
       setShowCustomForm(false);
       setCustomType('text');
@@ -60,6 +63,7 @@ export function SongArrangerModal({
       setCustomContent("");
       setCustomSectionIndex(null);
     }
+    prevOpen.current = open;
   }, [open, sections, initialArrangement]);
 
   const handleAddSection = (sectionIndex: number) => {
@@ -84,15 +88,15 @@ export function SongArrangerModal({
 
     const customData: CustomSectionData = customType === 'copy' && customSectionIndex !== null
       ? {
-          type: 'custom',
-          label: sections[customSectionIndex]?.label || '',
-          sectionIndex: customSectionIndex,
-        }
+        type: 'custom',
+        label: sections[customSectionIndex]?.label || '',
+        sectionIndex: customSectionIndex,
+      }
       : {
-          type: 'custom',
-          label: customLabel.trim(),
-          content: customContent.trim() || undefined,
-        };
+        type: 'custom',
+        label: customLabel.trim(),
+        content: customContent.trim() || undefined,
+      };
 
     const displayLabel = customType === 'copy' && customSectionIndex !== null
       ? `${sections[customSectionIndex]?.label} (Copy)`
@@ -372,8 +376,8 @@ export function SongArrangerModal({
 
                       <div className="flex flex-1 items-center gap-2">
                         <span className="text-xs text-muted-foreground w-6">{index + 1}.</span>
-                        <Badge 
-                          variant={item.isCustom ? "default" : "outline"} 
+                        <Badge
+                          variant={item.isCustom ? "default" : "outline"}
                           className="uppercase"
                         >
                           {item.displayType}
@@ -443,7 +447,7 @@ function buildInitialArrangement(
       const displayLabel = item.sectionIndex !== undefined
         ? `${sections[item.sectionIndex]?.label || item.label} (Copy)`
         : item.label;
-      
+
       return {
         tempId: crypto.randomUUID(),
         data: item,

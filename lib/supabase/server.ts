@@ -33,7 +33,9 @@ export async function createClient(options: CreateClientOptions = {}) {
           }
         },
       },
-      global: options.headers ? { headers: options.headers } : undefined,
+      global: {
+        headers: options.headers,
+      },
     },
   );
 }
