@@ -1,5 +1,12 @@
 {
-  "private": true,
+  "name": "selah",
+  "version": "1.0.0",
+  "description": "Organized chord charts, lyrics, and service plans for worship teams",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rohanprichard/selah.git"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
