@@ -1,6 +1,12 @@
 # Selah
 
-Selah helps worship teams pause, prepare, and worship with organized chord charts, lyrics, and service plans. This repository contains the core app with Supabase integration, authentication, and the search-first song library.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=flat&logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-black?style=flat&logo=next.js&logoColor=white)
+
+> Pause. Prepare. Worship.
+
+Selah is an open-source platform designed to help Christian worship teams organize, manage, and share songs with elegant chord charts, lyrics, and service plans.
 
 ## Tech Stack
 
@@ -10,6 +16,10 @@ Selah helps worship teams pause, prepare, and worship with organized chord chart
 - [Tonal](https://github.com/tonaljs/tonal) for chord transposition
 - [Sonner](https://sonner.emilkowal.ski/) for toast notifications
 - [Vitest](https://vitest.dev/) for unit tests
+
+## Screenshots
+
+*(Add screenshots of your song library, chord viewer, and setlist builder here)*
 
 ## Getting Started
 
@@ -78,19 +88,17 @@ Selah helps worship teams pause, prepare, and worship with organized chord chart
 - **Auth & Toasts**: Email/password auth powered by Supabase with inline toast feedback (`sonner`) for create/update/delete flows.
 - **Accessibility**: Skip navigation link, focus-visible states, semantic headings, and print-friendly variants.
 
-## Deployment & Monitoring
+## Deployment
 
-1. **Vercel**
-   - Connect the repository and choose the Next.js preset.
-   - Define environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`).
-   - Configure a production Supabase project and mirror the SQL migration (`supabase/migrations/0001_base_schema.sql`).
-   - Add the Supabase redirect URLs (production domain variants) and optional password reset templates.
-2. **Supabase**
-   - Enable database backups and set log retention according to plan limits.
-   - Monitor query performance in the Supabase dashboard; the song library uses RLS-friendly filters with existing indexes.
-3. **Monitoring**
-   - Recommended: connect [Vercel Analytics](https://vercel.com/analytics) and [Sentry](https://sentry.io/) (add `SENTRY_DSN` to the environment and instrument via the Next.js SDK) once the team is ready.
-   - Supabase provides request logs—watch for RLS errors when introducing new routes.
+Selah is optimized for deployment on Vercel with a Supabase backend.
+
+1. **Supabase Setup**
+   - Create a new Supabase project.
+   - Run the migrations in `supabase/migrations/` sequentially via the SQL Editor.
+   - Configure Google OAuth and authentication redirect URLs as detailed above.
+2. **Vercel Setup**
+   - Import the repository to Vercel (Next.js preset).
+   - Supply the `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` environment variables.
 
 ## Troubleshooting
 
@@ -98,6 +106,10 @@ Selah helps worship teams pause, prepare, and worship with organized chord chart
 - **Session issues** – middleware currently protects `/my-songs`, `/songs/new`, and `/songs/[id]/edit`. Extend guards if additional routes need authentication.
 - **Type errors referencing `.next`** – run `npm run typecheck` after deleting `.next/` to regenerate route types.
 
+## Contributing
+
+Contributions are welcome! Whether it's a bug report, feature request, or code contribution, we appreciate your help. Please see the [Contributing Guide](CONTRIBUTING.md) for details on our workflow and the [Code of Conduct](CODE_OF_CONDUCT.md) for our community standards.
+
 ## License
 
-Private work product for the Selah SaaS. Distribution requires project owner approval.
+Distributed under the MIT License. See `LICENSE` for more information.
