@@ -375,7 +375,7 @@ npm test           # Run Vitest unit tests
 ### Environment Variables
 Required in `.env.local`:
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://aqsabhygtzunggyqkzbg.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<anon key>
 ```
 

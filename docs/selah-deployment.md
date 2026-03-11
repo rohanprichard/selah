@@ -13,7 +13,7 @@ Add the following keys in Vercel → *Project → Settings → Environment Varia
 
 | Key | Value | Notes |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://aqsabhygtzunggyqkzbg.supabase.co` | Public client URL. |
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://your-project-id.supabase.co` | Public client URL. |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase anon key | Copy from Supabase → Project Settings → API. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | Required for server-side Supabase helpers. |
 
@@ -32,15 +32,15 @@ In Supabase Dashboard → *Authentication → URL Configuration*:
    - `http://localhost:3000/auth/callback`
    - `http://localhost:3000/my-songs`
    - `http://localhost:3000/songs/new`
-   - `https://ccm-saas.vercel.app/auth/update-password`
-   - `https://ccm-saas.vercel.app/auth/sign-up`
-   - `https://ccm-saas.vercel.app/auth/callback`
-   - `https://ccm-saas.vercel.app/my-songs`
-   - `https://ccm-saas.vercel.app/songs/new`
+   - `https://your-domain.vercel.app/auth/update-password`
+   - `https://your-domain.vercel.app/auth/sign-up`
+   - `https://your-domain.vercel.app/auth/callback`
+   - `https://your-domain.vercel.app/my-songs`
+   - `https://your-domain.vercel.app/songs/new`
 
 ### Google OAuth
 
-1. In Google Cloud Console, add `https://ccm-saas.vercel.app/auth/callback` to the authorized redirect URIs.
+1. In Google Cloud Console, add `https://your-domain.vercel.app/auth/callback` to the authorized redirect URIs.
 2. Paste the Google client ID and secret into Supabase → *Authentication → Providers → Google*.
 
 ### Database
@@ -71,7 +71,7 @@ In Supabase Dashboard → *Authentication → URL Configuration*:
 - Enable Vercel Analytics or add Sentry for error tracking once production traffic begins.
 - For automation scripts on another server, export:
   ```bash
-  export SUPABASE_URL=https://aqsabhygtzunggyqkzbg.supabase.co
+  export SUPABASE_URL=https://your-project-id.supabase.co
   export SUPABASE_SERVICE_ROLE_KEY=...
   export SELAH_CONTENT_USER_ID=...
   ```
