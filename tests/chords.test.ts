@@ -77,7 +77,7 @@ describe("formatSectionsAsLyrics", () => {
       },
     ];
 
-    const formatted = formatSectionsAsLyrics(sections as any);
+    const formatted = formatSectionsAsLyrics(sections);
     expect(formatted).toBe("Verse 1:\n\nLine one\nLine two\n\nBridge:\n\nLine A");
   });
 });

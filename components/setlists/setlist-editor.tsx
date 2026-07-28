@@ -78,7 +78,7 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
   const [searchResults, setSearchResults] = React.useState<SearchResult[]>([]);
   const [isSearching, startSearching] = React.useTransition();
   const [isAddingSongId, setIsAddingSongId] = React.useState<string | null>(null);
-  const [isAddPending, startAddTransition] = React.useTransition();
+  const [isAddPending] = React.useTransition();
   const searchTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Arranger modal state
@@ -148,7 +148,7 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
           // Success - server revalidation will eventually update props
           router.refresh();
         }
-      } catch (error) {
+      } catch {
         // Rollback on unexpected error
         setLocalSongs(previousSongs);
         toast.error("Failed to move song. Please try again.");
@@ -188,7 +188,7 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
           toast.success("Removed from setlist");
           router.refresh();
         }
-      } catch (error) {
+      } catch {
         setLocalSongs(previousSongs);
         toast.error("Failed to remove song.");
       } finally {
@@ -376,7 +376,7 @@ export function SetlistEditor({ setlist, songs }: SetlistEditorProps) {
           toast.success("Song added to setlist");
           router.refresh();
         }
-      } catch (error) {
+      } catch {
         setLocalSongs(previousSongs);
         toast.error("Failed to add song.");
       } finally {

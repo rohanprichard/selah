@@ -3,11 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   parseLyrics,
@@ -22,7 +20,7 @@ import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { ChordTooltip } from "@/components/chords/chord-tooltip";
-import { SelahLogo } from "@/components/selah-logo";
+
 
 const FONT_SIZES = {
   sm: "text-sm leading-6",
@@ -52,7 +50,6 @@ export function SongViewer({
   song,
   sections,
   isOwner,
-  ownerName,
   canRemix,
   notes,
   initialTranspose,

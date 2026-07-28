@@ -15,7 +15,6 @@ export function PianoVisualizer({ chordName, className }: PianoVisualizerProps) 
     // We'll show a range of keys, e.g., C3 to B4 (2 octaves)
     // Standard piano keys
     const whiteKeys = ["C", "D", "E", "F", "G", "A", "B"];
-    const blackKeys = ["C#", "D#", "F#", "G#", "A#"];
 
     // Map notes to key indices for 2 octaves
     // C3 is index 0 (white)

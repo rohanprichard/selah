@@ -143,7 +143,7 @@ export function SetlistLiveView({
                 {songs.length === 0 ? (
                     <div className="text-center py-16">
                         <p className="text-2xl text-muted-foreground">
-                            This setlist doesn't have any songs yet.
+                            This setlist doesn&rsquo;t have any songs yet.
                         </p>
                     </div>
                 ) : (

@@ -28,7 +28,7 @@ export function Hero() {
           </h1>
 
           <p className="text-lg text-muted-foreground max-w-[600px] text-pretty">
-            Selah is the modern home for your worship team's lyrics and chords.
+            Selah is the modern home for your worship team&rsquo;s lyrics and chords.
             Plan setlists, transpose instantly, and step onstage with confidence.
           </p>
 
