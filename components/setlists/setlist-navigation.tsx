@@ -25,11 +25,11 @@ export function SetlistNavigation({
     const searchParams = useSearchParams();
     const isLiveMode = searchParams.get("live") === "true";
 
-    const getHrefWithParams = (href: string) => {
+    const getHrefWithParams = React.useCallback((href: string) => {
         if (!isLiveMode) return href;
         const separator = href.includes("?") ? "&" : "?";
         return `${href}${separator}live=true`;
-    };
+    }, [isLiveMode]);
 
     React.useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -54,7 +54,7 @@ export function SetlistNavigation({
 
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [prevHref, nextHref, router, isLiveMode]); // Added isLiveMode dependency
+    }, [prevHref, nextHref, router, isLiveMode, getHrefWithParams]);
 
     // Don't render anything if there's only one song
     if (total <= 1) {

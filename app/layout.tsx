@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
@@ -20,6 +20,25 @@ export const metadata: Metadata = {
   },
   description:
     "Selah — Pause. Prepare. Worship. Plan and share your setlists with clarity and confidence.",
+  openGraph: {
+    title: "Selah",
+    description:
+      "Selah — Pause. Prepare. Worship. Plan and share your setlists with clarity and confidence.",
+    url: defaultUrl,
+    siteName: "Selah",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Selah",
+    description:
+      "Selah — Pause. Prepare. Worship. Plan and share your setlists with clarity and confidence.",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 const geistSans = Geist({

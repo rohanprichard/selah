@@ -625,7 +625,7 @@ export function getGuitarChord(chordName: string): GuitarChord | null {
     // but ideally we'd have slash chords too. For now, simple lookup.
     // Also handle simple variations like "min" -> "m"
 
-    let search = chordName.replace("min", "m");
+    const search = chordName.replace("min", "m");
 
     // Try direct match
     if (GUITAR_CHORDS[search]) return GUITAR_CHORDS[search];

@@ -9,7 +9,7 @@ import {
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Removed unused import
 import { GuitarVisualizer } from "./guitar-visualizer";
 import { PianoVisualizer } from "./piano-visualizer";
-import { getGuitarChord } from "@/lib/guitar-chords";
+import { getGuitarChord, type GuitarChord } from "@/lib/guitar-chords";
 import { cn } from "@/lib/utils";
 
 type ChordTooltipProps = {
@@ -52,7 +52,7 @@ export function ChordTooltip({ chord, children, className }: ChordTooltipProps) 
     );
 }
 
-function VisualizerTabs({ chord, guitarChord }: { chord: string, guitarChord: any }) {
+function VisualizerTabs({ chord, guitarChord }: { chord: string, guitarChord: GuitarChord | null }) {
     const [mode, setMode] = React.useState<"guitar" | "piano">("guitar");
 
     return (
