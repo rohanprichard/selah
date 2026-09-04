@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function Page() {
   return (
@@ -14,12 +15,18 @@ export default function Page() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">Welcome to Selah</CardTitle>
-              <CardDescription>Confirm your email to finish setting things up.</CardDescription>
+              <CardDescription>Use Google to create your account.</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Please open your inbox to confirm your account before signing in.
+                Google creates your account when you sign in.
               </p>
+              <Link
+                href="/auth/login"
+                className="mt-4 inline-block text-sm underline underline-offset-4"
+              >
+                Continue with Google
+              </Link>
             </CardContent>
           </Card>
         </div>
