@@ -80,6 +80,11 @@
     @apply border-border;
   }
 
+  *:focus-visible {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 3px;
+  }
+
   body {
     @apply bg-background text-foreground selection:bg-accent/20 selection:text-accent-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -121,5 +126,16 @@
   .chord-line {
     font-size: 10pt;
     color: black;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

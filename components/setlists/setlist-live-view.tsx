@@ -3,296 +3,244 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { X, CircleDot } from "lucide-react";
+import { ChevronLeft, ChevronRight, CircleDot, X } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { getAdjacentEntryId, getLiveSetlistPath } from "@/lib/setlist-live";
 import { cn } from "@/lib/utils";
 
 type SetlistEntry = {
+  id: string;
+  order_index: number;
+  custom_key: string | null;
+  custom_tempo: number | null;
+  custom_time_signature: string | null;
+  notes: string | null;
+  song: {
     id: string;
-    order_index: number;
-    custom_key: string | null;
-    custom_tempo: number | null;
-    custom_time_signature: string | null;
-    notes: string | null;
-    song: {
-        id: string;
-        title: string;
-        artist: string | null;
-        key: string;
-        tempo: number | null;
-        time_signature: string | null;
-    } | null;
+    title: string;
+    artist: string | null;
+    key: string;
+    tempo: number | null;
+    time_signature: string | null;
+  } | null;
 };
 
 type SetlistLiveViewProps = {
-    setlist: {
-        title: string;
-        description: string | null;
-    };
-    songs: SetlistEntry[];
-    shareToken?: string; // For shared setlists
-    setlistId?: string; // For authenticated setlists
-    currentEntryId: string | null;
-    onExitLiveMode: () => void;
+  setlist: {
+    title: string;
+    description: string | null;
+  };
+  songs: SetlistEntry[];
+  shareToken?: string;
+  setlistId?: string;
+  currentEntryId: string | null;
+  onExitLiveMode: () => void;
 };
 
 export function SetlistLiveView({
-    setlist,
-    songs,
-    shareToken,
-    setlistId,
-    currentEntryId,
-    onExitLiveMode,
+  setlist,
+  songs,
+  shareToken,
+  setlistId,
+  currentEntryId,
+  onExitLiveMode,
 }: SetlistLiveViewProps) {
-    const router = useRouter();
+  const router = useRouter();
+  const entryIds = React.useMemo(() => songs.map((song) => song.id), [songs]);
 
-    const handleSetCurrent = React.useCallback(
-        (entryId: string) => {
-            const baseUrl = shareToken ? `/s/${shareToken}` : `/setlists/${setlistId}`;
-            router.push(`${baseUrl}?live=true&current=${entryId}`);
-        },
-        [router, shareToken, setlistId]
-    );
+  const handleSetCurrent = React.useCallback(
+    (entryId: string | null) => {
+      router.push(getLiveSetlistPath({ shareToken, setlistId, currentEntryId: entryId }));
+    },
+    [router, shareToken, setlistId],
+  );
 
-    // Keyboard shortcuts
-    React.useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            // Don't trigger if user is typing
-            const target = event.target as HTMLElement;
-            if (
-                target.tagName === "INPUT" ||
-                target.tagName === "TEXTAREA" ||
-                target.isContentEditable
-            ) {
-                return;
-            }
+  const handleMove = React.useCallback(
+    (direction: -1 | 1) => {
+      const entryId = getAdjacentEntryId(entryIds, currentEntryId, direction);
 
-            // ESC to exit live mode
-            if (event.key === "Escape") {
-                event.preventDefault();
-                onExitLiveMode();
-                return;
-            }
+      if (entryId) {
+        handleSetCurrent(entryId);
+      }
+    },
+    [currentEntryId, entryIds, handleSetCurrent],
+  );
 
-            // Number keys 1-9, 0 to select songs
-            const num = parseInt(event.key, 10);
-            if (!isNaN(num)) {
-                event.preventDefault();
-                const index = num === 0 ? 9 : num - 1; // 0 maps to 10th song
-                if (songs[index]) {
-                    handleSetCurrent(songs[index].id);
-                }
-                return;
-            }
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
 
-            // Arrow up/down to navigate
-            if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-                event.preventDefault();
-                const currentIndex = songs.findIndex((s) => s.id === currentEntryId);
-                if (currentIndex === -1) return;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+        return;
+      }
 
-                const newIndex =
-                    event.key === "ArrowUp"
-                        ? Math.max(0, currentIndex - 1)
-                        : Math.min(songs.length - 1, currentIndex + 1);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onExitLiveMode();
+        return;
+      }
 
-                if (songs[newIndex]) {
-                    handleSetCurrent(songs[newIndex].id);
-                }
-            }
+      if (/^[0-9]$/.test(event.key)) {
+        event.preventDefault();
+        const index = event.key === "0" ? 9 : Number.parseInt(event.key, 10) - 1;
+        const entryId = entryIds[index];
 
-            // Space to clear current
-            if (event.key === " ") {
-                event.preventDefault();
-                const baseUrl = shareToken ? `/s/${shareToken}` : `/setlists/${setlistId}`;
-                router.push(`${baseUrl}?live=true`);
-            }
-        };
+        if (entryId) {
+          handleSetCurrent(entryId);
+        }
 
-        document.addEventListener("keydown", handleKeyDown);
-        return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [songs, currentEntryId, handleSetCurrent, onExitLiveMode, router, shareToken, setlistId]);
+        return;
+      }
 
-    return (
-        <div className="min-h-screen bg-background p-6 sm:p-12">
-            {/* Header */}
-            <div className="mb-12 flex items-start justify-between gap-4">
-                <div>
-                    <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-2">
-                        {setlist.title}
-                    </h1>
-                    {setlist.description && (
-                        <p className="text-xl text-muted-foreground">{setlist.description}</p>
-                    )}
-                </div>
-                <Button
-                    onClick={onExitLiveMode}
-                    variant="ghost"
-                    size="sm"
-                    className="shrink-0 gap-2"
-                >
-                    <X className="h-4 w-4" />
-                    Exit Live Mode
-                </Button>
-            </div>
+      if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+        event.preventDefault();
+        handleMove(event.key === "ArrowUp" ? -1 : 1);
+        return;
+      }
 
-            {/* Song List */}
-            <div className="mx-auto max-w-5xl space-y-6">
-                {songs.length === 0 ? (
-                    <div className="text-center py-16">
-                        <p className="text-2xl text-muted-foreground">
-                            This setlist doesn&rsquo;t have any songs yet.
-                        </p>
-                    </div>
-                ) : (
-                    songs.map((entry, index) => (
-                        <LiveSongRow
-                            key={entry.id}
-                            entry={entry}
-                            index={index}
-                            isCurrent={entry.id === currentEntryId}
-                            onSetCurrent={() => handleSetCurrent(entry.id)}
-                            shareToken={shareToken}
-                            setlistId={setlistId}
-                        />
-                    ))
-                )}
-            </div>
+      if (event.key === " ") {
+        event.preventDefault();
+        handleSetCurrent(null);
+      }
+    };
 
-            {/* Keyboard hints */}
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-muted/80 backdrop-blur-sm text-xs text-muted-foreground print:hidden">
-                <kbd className="px-1.5 py-0.5 bg-background rounded">1-9</kbd> Jump to song ·{" "}
-                <kbd className="px-1.5 py-0.5 bg-background rounded">↑↓</kbd> Navigate ·{" "}
-                <kbd className="px-1.5 py-0.5 bg-background rounded">ESC</kbd> Exit
-            </div>
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [entryIds, handleMove, handleSetCurrent, onExitLiveMode]);
+
+  return (
+    <div className="min-h-screen bg-background px-4 py-6 sm:px-8 sm:py-10 lg:px-12">
+      <header className="mx-auto mb-8 flex max-w-6xl flex-col gap-6 border-b border-border/70 pb-6 sm:mb-10 sm:flex-row sm:items-start sm:justify-between">
+        <div className="max-w-3xl space-y-2">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Live mode</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-5xl">{setlist.title}</h1>
+          {setlist.description ? <p className="text-base text-muted-foreground sm:text-lg">{setlist.description}</p> : null}
         </div>
-    );
+        <Button onClick={onExitLiveMode} variant="outline" className="w-full shrink-0 gap-2 sm:w-auto">
+          <X className="h-4 w-4" />
+          Exit live mode
+        </Button>
+      </header>
+
+      <div className="mx-auto max-w-6xl space-y-4 pb-28 sm:space-y-5">
+        {songs.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border bg-muted/30 px-6 py-16 text-center">
+            <h2 className="text-xl font-semibold text-foreground">Add a song before live mode</h2>
+            <p className="mt-2 text-muted-foreground">Return to the setlist editor to add songs.</p>
+          </div>
+        ) : (
+          songs.map((entry, index) => (
+            <LiveSongRow
+              key={entry.id}
+              entry={entry}
+              index={index}
+              isCurrent={entry.id === currentEntryId}
+              onSetCurrent={() => handleSetCurrent(entry.id)}
+              shareToken={shareToken}
+              setlistId={setlistId}
+            />
+          ))
+        )}
+      </div>
+
+      {songs.length > 0 ? (
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border/70 bg-background/95 px-4 py-3 shadow-lg backdrop-blur sm:px-8">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+            <Button aria-label="Show previous song" variant="outline" onClick={() => handleMove(-1)}>
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Previous</span>
+            </Button>
+            <p className="hidden text-center text-xs text-muted-foreground md:block">
+              <kbd className="rounded border bg-muted px-1.5 py-0.5">1-9</kbd> Select
+              <span className="mx-2">·</span>
+              <kbd className="rounded border bg-muted px-1.5 py-0.5">↑↓</kbd> Move
+              <span className="mx-2">·</span>
+              <kbd className="rounded border bg-muted px-1.5 py-0.5">Esc</kbd> Exit
+            </p>
+            <Button aria-label="Show next song" onClick={() => handleMove(1)}>
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 type LiveSongRowProps = {
-    entry: SetlistEntry;
-    index: number;
-    isCurrent: boolean;
-    onSetCurrent: () => void;
-    shareToken?: string;
-    setlistId?: string;
+  entry: SetlistEntry;
+  index: number;
+  isCurrent: boolean;
+  onSetCurrent: () => void;
+  shareToken?: string;
+  setlistId?: string;
 };
 
 function LiveSongRow({
-    entry,
-    index,
-    isCurrent,
-    onSetCurrent,
-    shareToken,
-    setlistId,
+  entry,
+  index,
+  isCurrent,
+  onSetCurrent,
+  shareToken,
+  setlistId,
 }: LiveSongRowProps) {
-    const [isHovered, setIsHovered] = React.useState(false);
-    const song = entry.song;
+  const song = entry.song;
 
-    if (!song) {
-        return (
-            <div className="rounded-lg border border-border/60 bg-muted/20 p-6 opacity-50">
-                <div className="flex items-start gap-6">
-                    <div className="text-6xl font-bold tabular-nums text-muted-foreground/50">
-                        {index + 1}
-                    </div>
-                    <div className="flex-1 space-y-2">
-                        <h3 className="text-4xl font-semibold text-muted-foreground">
-                            Unavailable song
-                        </h3>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    const songHref = shareToken
-        ? `/s/${shareToken}/songs/${entry.id}`
-        : `/setlists/${setlistId}/songs/${entry.id}`;
-
-    const displayKey = entry.custom_key ?? song.key;
-
+  if (!song) {
     return (
-        <div
-            className={cn(
-                "group relative rounded-lg transition-all duration-200",
-                isCurrent && "bg-primary/10 border-l-8 border-primary pl-6",
-                !isCurrent && "pl-2 hover:bg-muted/30"
-            )}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
-            <Link href={songHref} className="block p-6">
-                <div className="flex items-start gap-6">
-                    {/* Song Number */}
-                    <div
-                        className={cn(
-                            "text-5xl sm:text-6xl font-bold tabular-nums transition-colors",
-                            isCurrent ? "text-primary" : "text-muted-foreground"
-                        )}
-                    >
-                        {index + 1}
-                    </div>
-
-                    {/* Song Info */}
-                    <div className="flex-1 space-y-2">
-                        <h3
-                            className={cn(
-                                "text-3xl sm:text-4xl font-semibold transition-colors leading-tight",
-                                isCurrent ? "text-foreground" : "text-foreground"
-                            )}
-                        >
-                            {song.title}
-                        </h3>
-                        <p className="text-xl sm:text-2xl text-muted-foreground">
-                            {song.artist || "Unknown artist"}
-                        </p>
-
-                        {/* Key badge */}
-                        {displayKey && (
-                            <Badge
-                                variant="secondary"
-                                className="mt-2 text-base font-semibold px-3 py-1"
-                            >
-                                Key {displayKey}
-                            </Badge>
-                        )}
-
-                        {/* Notes (if any) */}
-                        {entry.notes && (
-                            <p className="mt-3 text-sm text-muted-foreground whitespace-pre-wrap">
-                                {entry.notes}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Set as Current Indicator/Button */}
-                    {isCurrent && (
-                        <div className="flex items-center gap-2 text-primary">
-                            <CircleDot className="h-6 w-6" />
-                            <span className="text-sm font-semibold hidden sm:inline">Current</span>
-                        </div>
-                    )}
-                </div>
-            </Link>
-
-            {/* Set as Current Button (hover only) */}
-            {!isCurrent && (isHovered || window.matchMedia('(pointer: coarse)').matches) && (
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="absolute top-6 right-6 gap-2"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        onSetCurrent();
-                    }}
-                >
-                    <CircleDot className="h-4 w-4" />
-                    Set as Current
-                </Button>
-            )}
-        </div>
+      <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-6 opacity-80">
+        <p className="text-sm font-medium text-muted-foreground">Song {index + 1}</p>
+        <h2 className="mt-1 text-2xl font-semibold text-foreground">Unavailable song</h2>
+      </div>
     );
+  }
+
+  const songHref = shareToken ? `/s/${shareToken}/songs/${entry.id}` : `/setlists/${setlistId}/songs/${entry.id}`;
+  const displayKey = entry.custom_key ?? song.key;
+
+  return (
+    <article
+      className={cn(
+        "rounded-2xl border bg-card p-5 shadow-sm transition-colors sm:p-6",
+        isCurrent ? "border-primary bg-primary/5 ring-2 ring-primary/25" : "border-border hover:border-primary/40",
+      )}
+    >
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+        <Link href={songHref} className="group flex min-w-0 items-start gap-4 rounded-lg focus-visible:outline-none">
+          <span className={cn("mt-1 text-2xl font-bold tabular-nums sm:text-3xl", isCurrent ? "text-primary" : "text-muted-foreground")}>
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <span className="min-w-0 space-y-2">
+            <span className="block truncate text-2xl font-semibold tracking-tight text-foreground group-hover:text-primary sm:text-3xl">
+              {song.title}
+            </span>
+            <span className="block text-base text-muted-foreground sm:text-lg">{song.artist || "Unknown artist"}</span>
+            <span className="flex flex-wrap gap-2">
+              {displayKey ? <Badge variant="secondary">Key {displayKey}</Badge> : null}
+              {entry.custom_tempo ?? song.tempo ? <Badge variant="outline">{entry.custom_tempo ?? song.tempo} BPM</Badge> : null}
+              {entry.custom_time_signature ?? song.time_signature ? <Badge variant="outline">{entry.custom_time_signature ?? song.time_signature}</Badge> : null}
+            </span>
+          </span>
+        </Link>
+        <div className="flex shrink-0 items-center gap-3">
+          {isCurrent ? (
+            <span className="flex items-center gap-2 text-sm font-semibold text-primary" role="status">
+              <CircleDot className="h-5 w-5" />
+              Current song
+            </span>
+          ) : (
+            <Button variant="outline" onClick={onSetCurrent} aria-label={`Set ${song.title} as current`}>
+              <CircleDot className="h-4 w-4" />
+              Set current
+            </Button>
+          )}
+        </div>
+      </div>
+      {entry.notes ? <p className="mt-4 border-t border-border pt-4 text-sm leading-6 text-muted-foreground">{entry.notes}</p> : null}
+    </article>
+  );
 }

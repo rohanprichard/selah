@@ -61,7 +61,7 @@ export function CreateSetlistForm() {
           size="lg"
         >
           <Plus className="h-5 w-5" />
-          Create New Setlist
+          Create setlist
         </Button>
       </div>
     );
@@ -75,28 +75,32 @@ export function CreateSetlistForm() {
       <CardContent>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground">
+            <label htmlFor="setlist-title" className="block text-sm font-medium text-foreground">
               Title
             </label>
             <Input
+              id="setlist-title"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Sunday Morning Worship"
               required
+              aria-describedby={error ? "setlist-error" : undefined}
+              aria-invalid={Boolean(error)}
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground">
+            <label htmlFor="setlist-description" className="block text-sm font-medium text-foreground">
               Description <span className="text-muted-foreground">(optional)</span>
             </label>
             <Textarea
+              id="setlist-description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Add context, scripture references, or rehearsal notes."
               rows={3}
             />
           </div>
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? <p id="setlist-error" role="alert" className="text-sm text-destructive">{error}</p> : null}
           <div className="flex gap-2">
             <Button type="submit" disabled={isPending}>
               {isPending ? "Creating..." : "Create setlist"}
@@ -119,5 +123,4 @@ export function CreateSetlistForm() {
     </Card>
   );
 }
-
 
