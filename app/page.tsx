@@ -1,122 +1,90 @@
-import { Hero } from "@/components/hero";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Library, ListMusic, Users, Search, Edit3, Share2 } from "lucide-react";
+import { Hero } from "@/components/hero";
+import { Button } from "@/components/ui/button";
+
+const howItWorks = [
+  {
+    step: "1",
+    title: "Upload the chart",
+    description:
+      "Chords and lyrics in one place. Add a link to the YouTube or live take you\u2019re following.",
+  },
+  {
+    step: "2",
+    title: "Keep versions straight",
+    description:
+      "Same song, different arrangements. Fork a chart. Mark the one your team uses.",
+  },
+  {
+    step: "3",
+    title: "Share the right one",
+    description:
+      "Send a link. Everyone opens the same version — no scavenger hunt in the group chat.",
+  },
+];
 
 export default function Home() {
-  const features = [
-    {
-      title: "Song Library",
-      description: "Collect chords, lyrics, and resources in one trusted place.",
-      icon: Library,
-    },
-    {
-      title: "Arrangements",
-      description: "Shape sections quickly with inline chords, reordering, and clean previews.",
-      icon: Edit3,
-    },
-    {
-      title: "Team-Friendly",
-      description: "Share transposable charts so every musician arrives prepared and confident.",
-      icon: Users,
-    },
-  ];
-
-  const workflow = [
-    {
-      title: "Search the catalog",
-      description: "Find proven arrangements from the community or remix your own favourites.",
-      icon: Search,
-    },
-    {
-      title: "Customize sections",
-      description: "Fine-tune lyrics, chords, and flow without breaking your rhythm.",
-      icon: ListMusic,
-    },
-    {
-      title: "Share with your team",
-      description: "Send detailed lyrics to vocals, chords to band, and the flow to tech.",
-      icon: Share2,
-    },
-  ];
-
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-24 px-4 py-16">
+    <div className="flex flex-col">
       <Hero />
 
-      <section className="grid gap-8 md:grid-cols-3">
-        {features.map((feature) => (
-          <Card key={feature.title} className="glass border-white/20 bg-white/40 dark:bg-black/20 transition-all hover:-translate-y-1 hover:shadow-lg">
-            <CardHeader>
-              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <feature.icon className="h-6 w-6" />
+      {/* How it works */}
+      <section className="border-t border-border bg-card">
+        <div className="mx-auto max-w-3xl px-4 py-20 sm:py-24">
+          <h2 className="mb-12 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
+            How it works
+          </h2>
+          <div className="grid gap-10 sm:grid-cols-3 sm:gap-8">
+            {howItWorks.map((item) => (
+              <div key={item.step} className="text-center sm:text-left">
+                <span className="mb-3 inline-block text-xs font-semibold text-muted-foreground">
+                  {item.step}
+                </span>
+                <h3 className="mb-2 text-base font-semibold text-foreground">
+                  {item.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {item.description}
+                </p>
               </div>
-              <CardTitle className="text-xl">{feature.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-base">{feature.description}</CardDescription>
-            </CardContent>
-          </Card>
-        ))}
+            ))}
+          </div>
+        </div>
       </section>
 
-      <section className="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground px-6 py-16 sm:px-12 sm:py-24">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path d="M0 100 C 20 0 50 0 100 100 Z" fill="currentColor" />
-          </svg>
-        </div>
-
-        <div className="relative z-10 grid gap-12 lg:grid-cols-2 items-center">
-          <div className="space-y-6">
-            <Badge variant="secondary" className="bg-white/20 text-white hover:bg-white/30 border-none">
-              Workflow
-            </Badge>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Pause. Prepare. Worship.
-            </h2>
-            <p className="text-lg text-primary-foreground/80 max-w-md">
-              Selah keeps your worship prep smooth and coordinated from discovery to rehearsal.
+      {/* Why Selah */}
+      <section className="border-t border-border">
+        <div className="mx-auto max-w-2xl px-4 py-20 text-center sm:py-24">
+          <h2 className="mb-8 text-sm font-medium uppercase tracking-wider text-muted-foreground">
+            Why Selah
+          </h2>
+          <div className="space-y-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
+            <p>Official catalogs sell the song.</p>
+            <p>Drive folders bury the take you meant.</p>
+            <p className="font-medium text-foreground">
+              Selah is for the chart that matches <em>this</em> recording — bass
+              line, key, and all.
             </p>
-            <div className="flex flex-col gap-4 pt-4">
-              {workflow.map((item) => (
-                <div key={item.title} className="flex gap-4 items-start">
-                  <div className="mt-1 h-6 w-6 shrink-0 rounded-full bg-white/20 flex items-center justify-center">
-                    <item.icon className="h-3 w-3" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{item.title}</h3>
-                    <p className="text-sm text-primary-foreground/70">{item.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
+        </div>
+      </section>
 
-          <Card className="glass bg-white/10 border-white/20 text-white">
-            <CardHeader>
-              <CardTitle>Begin with Selah</CardTitle>
-              <CardDescription className="text-white/70">
-                Create a free account to save private charts or explore the public library for inspiration.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <Link
-                href="/auth/sign-up"
-                className="rounded-md bg-white text-primary px-4 py-3 text-center text-sm font-bold shadow-sm transition hover:bg-white/90"
-              >
-                Create an account
-              </Link>
-              <Link
-                href="/songs"
-                className="rounded-md border border-white/30 px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-white/10"
-              >
-                Search the library
-              </Link>
-            </CardContent>
-          </Card>
+      {/* Closing strip */}
+      <section className="border-t border-border bg-foreground text-background">
+        <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-16 text-center sm:py-20">
+          <p className="mb-1 text-base text-background/70">
+            Praising with the chart.
+          </p>
+          <h2 className="mb-8 text-xl font-semibold tracking-tight sm:text-2xl">
+            Let everything that has breath praise the Lord.
+          </h2>
+          <Button
+            asChild
+            size="lg"
+            className="h-11 bg-background px-6 text-base text-foreground hover:bg-background/90"
+          >
+            <Link href="/auth/login">Upload a song</Link>
+          </Button>
         </div>
       </section>
     </div>

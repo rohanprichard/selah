@@ -1,95 +1,99 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight, Music2, PlayCircle } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+
+const rotatingWords = [
+  "cymbals",
+  "harp",
+  "strings",
+  "bass",
+  "keyboard",
+  "your voice",
+  "the chart",
+  "the click",
+];
 
 export function Hero() {
-  return (
-    <section className="relative overflow-hidden py-12 sm:py-20">
-      <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          className="flex flex-col items-center gap-6 text-center lg:items-start lg:text-left"
-        >
-          <Badge variant="outline" className="rounded-full border-primary/20 bg-primary/5 px-4 py-1 text-primary">
-            Worship planning, in one place
-          </Badge>
-          <div className="space-y-5">
-            <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-6xl">
-              Pause. Prepare. <span className="text-primary">Worship.</span>
-            </h1>
-            <p className="max-w-xl text-lg leading-8 text-muted-foreground">
-              Organize charts, build a setlist, and prepare each musician before rehearsal.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg" className="h-12 rounded-full px-7 text-base shadow-lg shadow-primary/20">
-              <Link href="/auth/sign-up">
-                Create a team space <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="h-12 rounded-full px-7 text-base">
-              <Link href="/songs">
-                <PlayCircle className="mr-2 h-4 w-4" /> Browse charts
-              </Link>
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground">Use Selah for planning, rehearsal, and live performance.</p>
-        </motion.div>
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.55, delay: 0.12 }}
-          className="relative mx-auto w-full max-w-xl"
-        >
-          <Card className="overflow-hidden border-primary/15 bg-card shadow-2xl shadow-primary/10">
-            <div className="flex items-center gap-3 border-b bg-muted/50 px-5 py-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                <Music2 className="h-5 w-5" />
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % rotatingWords.length);
+    }, 2400);
+
+    return () => clearInterval(interval);
+  }, [prefersReducedMotion]);
+
+  return (
+    <section className="mx-auto flex max-w-2xl flex-col items-center px-4 py-20 text-center sm:py-28 md:py-36">
+      <div className="mb-10 space-y-3">
+        <p className="text-lg text-muted-foreground sm:text-xl">
+          Praising with the{" "}
+          <span className="relative inline-block min-w-[7ch] text-left">
+            {prefersReducedMotion ? (
+              <span className="font-medium text-foreground">
+                {rotatingWords[0]}
               </span>
-              <div>
-                <p className="text-sm font-semibold">Sunday worship</p>
-                <p className="text-xs text-muted-foreground">Four songs · Key D</p>
-              </div>
-              <Badge className="ml-auto">Ready</Badge>
-            </div>
-            <div className="space-y-3 p-5 sm:p-6">
-              <PreviewRow number="01" title="With a Thousand Hallelujahs" keyName="D" current />
-              <PreviewRow number="02" title="Build My Life" keyName="E" />
-              <PreviewRow number="03" title="Goodness of God" keyName="G" />
-            </div>
-          </Card>
-          <div className="absolute -inset-8 -z-10 rounded-full bg-primary/15 blur-3xl" />
-        </motion.div>
+            ) : (
+              rotatingWords.map((word, index) => (
+                <span
+                  key={word}
+                  className={`absolute left-0 top-0 font-medium text-foreground transition-opacity duration-500 ${
+                    index === currentIndex ? "opacity-100" : "opacity-0"
+                  }`}
+                  aria-hidden={index !== currentIndex}
+                >
+                  {word}
+                </span>
+              ))
+            )}
+            {!prefersReducedMotion && (
+              <span className="invisible font-medium">your voice</span>
+            )}
+          </span>
+        </p>
+
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          Let everything that has breath praise the Lord.
+        </h1>
+      </div>
+
+      <div className="mb-12 max-w-xl space-y-4">
+        <p className="text-xl font-medium tracking-tight text-foreground sm:text-2xl">
+          Charts for the version you actually play.
+        </p>
+        <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
+          Upload chords and lyrics. Keep every take straight. Share the
+          arrangement that matches the recording — not a random PDF from last
+          year.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+        <Button asChild size="lg" className="h-11 px-6 text-base">
+          <Link href="/auth/login">Upload a song</Link>
+        </Button>
+        <Button asChild variant="outline" size="lg" className="h-11 px-6 text-base">
+          <Link href="/songs">Browse charts</Link>
+        </Button>
       </div>
     </section>
-  );
-}
-
-function PreviewRow({
-  number,
-  title,
-  keyName,
-  current = false,
-}: {
-  number: string;
-  title: string;
-  keyName: string;
-  current?: boolean;
-}) {
-  return (
-    <div className={current ? "flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-3" : "flex items-center gap-3 rounded-xl p-3"}>
-      <span className="text-sm font-semibold tabular-nums text-muted-foreground">{number}</span>
-      <span className="min-w-0 flex-1 truncate font-medium">{title}</span>
-      <Badge variant={current ? "default" : "secondary"}>Key {keyName}</Badge>
-    </div>
   );
 }
