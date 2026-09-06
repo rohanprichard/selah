@@ -4,74 +4,66 @@
 
 @layer base {
   :root {
-    /* HSL Color Palette - Premium & Natural */
-    --background: 35 30% 98%;
-    /* Warmer, cleaner white */
-    --foreground: 151 49% 10%;
-    /* Deep forest green, almost black */
+    /* Notion-quiet / Linear-inspired: paper + ink + calm accent */
+    --background: 40 20% 98%;
+    --foreground: 220 15% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 151 49% 10%;
+    --card-foreground: 220 15% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 151 49% 10%;
+    --popover-foreground: 220 15% 12%;
 
-    --primary: 151 55% 20%;
-    /* Richer forest green */
-    --primary-foreground: 35 42% 96%;
+    --primary: 220 12% 18%;
+    --primary-foreground: 40 20% 98%;
 
-    --secondary: 35 20% 92%;
-    /* Warm beige/grey for secondary actions */
-    --secondary-foreground: 151 49% 15%;
+    --secondary: 40 12% 93%;
+    --secondary-foreground: 220 15% 18%;
 
-    --muted: 35 20% 94%;
-    --muted-foreground: 151 20% 40%;
+    --muted: 40 10% 95%;
+    --muted-foreground: 220 8% 46%;
 
-    --accent: 38 92% 50%;
-    /* Golden amber for "Wow" moments */
-    --accent-foreground: 0 0% 100%;
+    --accent: 220 12% 18%;
+    --accent-foreground: 40 20% 98%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 35 15% 85%;
-    --input: 35 15% 85%;
-    --ring: 151 55% 20%;
+    --border: 40 12% 88%;
+    --input: 40 12% 88%;
+    --ring: 220 12% 18%;
 
-    --radius: 0.75rem;
-    /* Softer corners */
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 151 45% 5%;
-    /* Very deep green/black */
-    --foreground: 35 20% 90%;
+    --background: 220 16% 8%;
+    --foreground: 40 15% 92%;
 
-    --card: 151 45% 7%;
-    --card-foreground: 35 20% 90%;
+    --card: 220 16% 10%;
+    --card-foreground: 40 15% 92%;
 
-    --popover: 151 45% 7%;
-    --popover-foreground: 35 20% 90%;
+    --popover: 220 16% 10%;
+    --popover-foreground: 40 15% 92%;
 
-    --primary: 151 40% 50%;
-    /* Muted forest green for dark mode */
-    --primary-foreground: 0 0% 100%;
+    --primary: 40 15% 92%;
+    --primary-foreground: 220 16% 8%;
 
-    --secondary: 151 30% 12%;
-    --secondary-foreground: 35 20% 90%;
+    --secondary: 220 14% 14%;
+    --secondary-foreground: 40 15% 88%;
 
-    --muted: 151 30% 12%;
-    --muted-foreground: 151 10% 60%;
+    --muted: 220 14% 14%;
+    --muted-foreground: 220 8% 56%;
 
-    --accent: 38 92% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 40 15% 92%;
+    --accent-foreground: 220 16% 8%;
 
-    --destructive: 0 62% 30%;
+    --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 151 30% 15%;
-    --input: 151 30% 15%;
-    --ring: 151 40% 50%;
+    --border: 220 14% 18%;
+    --input: 220 14% 18%;
+    --ring: 40 15% 92%;
   }
 }
 
